@@ -63,6 +63,7 @@ staging_protocols = {
 	'single-pixel-buffer': ['v1'],
 	'tearing-control': ['v1'],
 	'xdg-activation': ['v1'],
+	'xdg-cutouts': ['v1'],
 	'xdg-dialog': ['v1'],
 	'xdg-system-bell': ['v1'],
 	'xdg-toplevel-drag': ['v1'],
