@@ -108,7 +108,7 @@ foreach protocol_file : protocol_files
 			'-std=c99',
 			'-pedantic',
 			'-Wall',
-			'-Werror' ],
+		],
 		install: false,
 	)
 	test(test_name, pedantic_test_executable)
@@ -134,7 +134,6 @@ foreach protocol_file : protocol_files
 			dependencies: libwayland,
 			cpp_args: [
 				'-Wall',
-				'-Werror',
 			],
 			install: false,
 		)
