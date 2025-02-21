@@ -22,7 +22,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="wp_cursor_shape_manager_v1" version="1">
+  <interface name="wp_cursor_shape_manager_v1" version="2">
     <description summary="cursor shape manager">
       This global offers an alternative, optional way to set cursor images. This
       new way uses enumerated cursors instead of a wl_surface like
@@ -63,7 +63,7 @@
     </request>
   </interface>
 
-  <interface name="wp_cursor_shape_device_v1" version="1">
+  <interface name="wp_cursor_shape_device_v1" version="2">
     <description summary="cursor shape for a device">
       This interface allows clients to set the cursor shape.
     </description>
@@ -74,7 +74,18 @@
 
         The names are taken from the CSS W3C specification:
         https://w3c.github.io/csswg-drafts/css-ui/#cursor
+
+        All values correspond to fixed cursor shapes, except for 'auto',
+        which gives the compositor the freedom to use a suitable shape
+        depending on context, with the only requirement that it must always
+        select a visible shape.
+
+        It is acceptable for the compositor to always use 'default' when the
+        'auto' shape is selected, but it is recommended that the compositor
+        should pick a suitable shape depending on the selected action during
+        DND operations.
       </description>
+      <entry name="auto" value="0" summary="the compositor determines the cursor to display" since="2"/>
       <entry name="default" value="1" summary="default cursor"/>
       <entry name="context_menu" value="2" summary="a context menu is available for the object under the cursor"/>
       <entry name="help" value="3" summary="help is available for the object under the cursor"/>
@@ -109,6 +120,7 @@
       <entry name="all_scroll" value="32" summary="something can be scrolled in any direction"/>
       <entry name="zoom_in" value="33" summary="something can be zoomed in"/>
       <entry name="zoom_out" value="34" summary="something can be zoomed out"/>
+      <entry name="none" value="35" summary="no cursor image is shown" since="2"/>
     </enum>
 
     <enum name="error">
