@@ -501,6 +501,11 @@
 	If null is passed as a parent, a parent surface must be specified using
 	some other protocol, before committing the initial state.
 
+	When the bound xdg_surface version is 6 or higher, passing any non-null
+	parent surface is treated as a protocol vilation, and will result in an
+	invalid_popup_parent protocol error. To achieve equivalent semantics,
+	use "xdg_popup.set_parent" request.
+
 	See the documentation of xdg_popup for more details about what an
 	xdg_popup is and how it is used.
       </description>
@@ -1378,6 +1383,26 @@
       </description>
       <arg name="token" type="uint" summary="reposition request token"/>
     </event>
+
+    <!-- Version 6 additions -->
+
+    <request name="set_parent" since="6">
+      <description summary="set popup parent request">
+	Set the visual parent of this surface. This surface should be
+	stacked above the parent surface and all other ancestor surfaces.
+
+	The parent surface must not be one of the child surface's
+	descendants, and the parent must be different from this surface,
+	otherwise the invalid_popup_parent protocol error is raised.
+
+	The parent of an xdg_popup must be mapped before the xdg_popup
+	itself, otherwise invalid_popup_parent protocol error is raised.
+
+	The parent must be set before the first wl_surface.commit request,
+	otherwise invalid_popup_parent protocol error is raised.
+      </description>
+      <arg name="parent" type="object" interface="wl_surface"/>
+    </request>
 
   </interface>
 </protocol>
