@@ -671,8 +671,8 @@
     <!-- Version 2 additions -->
 
     <enum name="bustype" since="2">
-      <description summary="bus type ">
-	Describes the bus types this tablet is connected to.
+      <description summary="bus type">
+	Describes the type of bus this tablet is connected to.
       </description>
       <entry name="usb" value="3" summary="USB"/>
       <entry name="bluetooth" value="5" summary="Bluetooth"/>
