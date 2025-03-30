@@ -70,7 +70,7 @@
     <description summary="Interface for suggesting absolute toplevel placement">
       This interface allows a privileged client to suggest an initial placement
       position for its associated xdg_toplevel window, specified using absolute logical
-      coordinates relative to a specific wl_output.
+      coordinates relative to a specific xdg_output.
 
       Access to create and use this interface is subject to compositor policy.
 
@@ -87,7 +87,7 @@
       <description summary="suggest placement at absolute logical coordinates on an output">
         Suggests an initial placement position (x, y) for the associated xdg_toplevel.
         The coordinates are in logical pixels, relative to the top-left corner
-        of the specified wl_output's logical area.
+        of the specified xdg_output's logical area.
 
         This request serves as a hint to the compositor. The compositor MAY ignore
         this hint entirely or modify the outcome based on its state or policies.
@@ -98,7 +98,7 @@
         Compositors are unlikely to substantially alter placement based on
         suggestions sent after the window is already mapped and positioned.
       </description>
-      <arg name="output" type="object" interface="wl_output" summary="target output"/>
+      <arg name="output" type="object" interface="xdg_output" summary="target output"/>
       <arg name="x" type="int" summary="suggested logical x coordinate relative to output"/>
       <arg name="y" type="int" summary="suggested logical y coordinate relative to output"/>
     </request>
@@ -118,21 +118,29 @@
          Standard xdg_toplevel.configure events remain the primary source for
          ongoing size, state, and potentially position updates.
        </description>
-       <arg name="output" type="object" interface="wl_output" summary="output the window is ultimately placed on"/>
+       <arg name="output" type="object" interface="xdg_output" summary="output the window is ultimately placed on"/>
        <arg name="x" type="int" summary="final logical x coordinate relative to output"/>
        <arg name="y" type="int" summary="final logical y coordinate relative to output"/>
     </event>
 
-  </interface>
+    <request name="get_placement_state">
+      <description summary="request the current placement state">
+        Requests the compositor to send the current placement state, including
+        the output and logical coordinates where the toplevel is currently placed.
+      </description>
+    </request>
 
-   <interface name="wl_registry" version="1">
-       <request name="bind" type="destructor">
-         <description summary="bind an object to the display">
-           bind the ext_toplevel_placement_manager_v1 global
-         </description>
-         <arg name="name" type="uint" summary="unique name for the object"/>
-         <arg name="id" type="new_id" interface="ext_toplevel_placement_manager_v1" summary="bounded object"/>
-       </request>
-   </interface>
+    <event name="placement_state">
+       <description summary="notify client of current placement state">
+         This event provides the current output and logical position where
+         the compositor has placed the window. It is sent in response to a
+         `get_placement_state` request.
+       </description>
+       <arg name="output" type="object" interface="xdg_output" summary="output the window is currently placed on"/>
+       <arg name="x" type="int" summary="current logical x coordinate relative to output"/>
+       <arg name="y" type="int" summary="current logical y coordinate relative to output"/>
+    </event>
+
+  </interface>
 
 </protocol>
