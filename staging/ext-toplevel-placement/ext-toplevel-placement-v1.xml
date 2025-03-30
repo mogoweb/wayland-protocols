@@ -48,8 +48,8 @@
 
             The compositor MUST apply its policy to determine if the client is
             authorized. If the client is not authorized according to compositor policy,
-            the compositor MUST send the `permission_denied` error and MUST NOT
-            create the object. If the toplevel already has a placement object,
+            the compositor MUST NOT create the object.
+            If the toplevel already has a placement object,
             the compositor MUST send the `placement_exists` error.
 
             This interface can only be obtained once per xdg_toplevel.
@@ -61,8 +61,6 @@
       <enum name="error">
         <entry name="placement_exists" value="0"
                summary="the toplevel already has a placement object"/>
-        <entry name="permission_denied" value="1"
-               summary="client is not authorized by compositor policy"/>
       </enum>
   </interface>
 
