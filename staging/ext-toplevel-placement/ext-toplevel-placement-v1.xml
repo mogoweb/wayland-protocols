@@ -92,8 +92,9 @@
         Compositors are unlikely to substantially alter placement based on
         suggestions sent after the window is already mapped and positioned.
 
-        This request causes the compositor to send the placement state, including
-        the output and logical coordinates where the toplevel is currently placed.
+        This request causes the compositor to send `placement_state`, including
+        the output and logical coordinates where the toplevel is currently placed,
+        or `not_placed`.
       </description>
       <arg name="output" type="object" interface="xdg_output" summary="target output"/>
       <arg name="x" type="int" summary="suggested logical x coordinate relative to output"/>
@@ -125,6 +126,18 @@
        <arg name="output" type="object" interface="xdg_output" summary="output the window is currently placed on"/>
        <arg name="x" type="int" summary="current logical x coordinate relative to output"/>
        <arg name="y" type="int" summary="current logical y coordinate relative to output"/>
+    </event>
+
+    <event name="not_placed">
+      <description summary="notify client that placement based on suggestion definitively failed">
+        This event is sent if the compositor *cannot* place the toplevel window
+        *as suggested*. This might be due to various reasons like no suitable output,
+        geometry conflicts, or unresolvable policy restrictions *after considering the suggestion*.
+        Receiving this event implies that the compositor will *not* honor the
+        placement suggestion and the toplevel might not be placed at all, or will be
+        placed using a fallback mechanism unrelated to the suggestion.
+      </description>
+      <arg name="reason_string" type="string" optional="true" summary="optional human-readable reason for placement failure"/>
     </event>
 
   </interface>
