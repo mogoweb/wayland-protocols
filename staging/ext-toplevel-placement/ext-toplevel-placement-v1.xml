@@ -95,31 +95,14 @@
         ideally be sent before the first wl_surface.commit that maps the window.
         Compositors are unlikely to substantially alter placement based on
         suggestions sent after the window is already mapped and positioned.
+
+        This request causes the compositor to send the placement state, including
+        the output and logical coordinates where the toplevel is currently placed.
       </description>
       <arg name="output" type="object" interface="xdg_output" summary="target output"/>
       <arg name="x" type="int" summary="suggested logical x coordinate relative to output"/>
       <arg name="y" type="int" summary="suggested logical y coordinate relative to output"/>
     </request>
-
-    <event name="configured">
-       <description summary="notify client of final placement outcome">
-         This event notifies the client of the output and logical position where
-         the compositor has actually placed the window, typically sent during
-         the initial configuration sequence after considering any placement
-         suggestions.
-
-         This allows the client to know the result of its suggestion and update
-         its stored state accurately. Compositors are not required to send this
-         event if no suggestion was made or considered relevant to the final
-         placement decision.
-
-         Standard xdg_toplevel.configure events remain the primary source for
-         ongoing size, state, and potentially position updates.
-       </description>
-       <arg name="output" type="object" interface="xdg_output" summary="output the window is ultimately placed on"/>
-       <arg name="x" type="int" summary="final logical x coordinate relative to output"/>
-       <arg name="y" type="int" summary="final logical y coordinate relative to output"/>
-    </event>
 
     <request name="get_placement_state">
       <description summary="request the current placement state">
@@ -130,9 +113,18 @@
 
     <event name="placement_state">
        <description summary="notify client of current placement state">
-         This event provides the current output and logical position where
-         the compositor has placed the window. It is sent in response to a
-         `get_placement_state` request.
+         This event notifies the client of the output and logical position where
+         the compositor has actually placed the window, typically sent during
+         the initial configuration sequence after considering any placement
+         suggestions, and in response to a `get_placement_state` request.
+
+         This allows the client to know the result of its suggestion and update
+         its stored state accurately. Compositors are not required to send this
+         event if no suggestion was made or considered relevant to the final
+         placement decision.
+
+         Standard xdg_toplevel.configure events remain the primary source for
+         ongoing size, state, and potentially position updates.
        </description>
        <arg name="output" type="object" interface="xdg_output" summary="output the window is currently placed on"/>
        <arg name="x" type="int" summary="current logical x coordinate relative to output"/>
