@@ -30,11 +30,10 @@
         for xdg_toplevels.
 
         The compositor may choose to restrict the availability of this manager
-        global or the creation of placement objects via `get_placement`
-        to privileged clients based on its internal policy. This policy might involve
-        checking the client's identity (e.g., via app_id or executable path)
-        against a configured list of trusted clients configurable by the user.
-        This is compositor policy.
+        based on its internal policy. This might involve checking the client's
+        identity (e.g., via app_id or executable path) against a list of privileged
+        clients configurable by the user.
+        
       </description>
 
       <request name="destroy" type="destructor">
@@ -46,9 +45,6 @@
             Attempt to create an ext_toplevel_placement_v1 interface for a given
             xdg_toplevel.
 
-            The compositor MUST apply its policy to determine if the client is
-            authorized. If the client is not authorized according to compositor policy,
-            the compositor MUST NOT create the object.
             If the toplevel already has a placement object,
             the compositor MUST send the `placement_exists` error.
 
