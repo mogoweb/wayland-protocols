@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="ext_toplevel_placement_v1">
+
+  <copyright>
+    Copyright © 2025 The Wayland Authors
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <interface name="ext_toplevel_placement_manager_v1" version="1">
+      <description summary="manager to create placement suggestion objects">
+        This interface is a manager used to create placement suggestion objects
+        for xdg_toplevels.
+
+        The compositor may choose to restrict the availability of this manager
+        global or the creation of placement objects via `get_placement`
+        to privileged clients based on its internal policy. This policy might involve
+        checking the client's identity (e.g., via app_id or executable path)
+        against a configured list of trusted clients configurable by the user.
+        This is compositor policy.
+      </description>
+
+      <request name="destroy" type="destructor">
+        <description summary="destroy the placement manager"/>
+      </request>
+
+      <request name="get_placement">
+        <description summary="get the placement suggestion interface for a toplevel">
+            Attempt to create an ext_toplevel_placement_v1 interface for a given
+            xdg_toplevel.
+
+            The compositor MUST apply its policy to determine if the client is
+            authorized. If the client is not authorized according to compositor policy,
+            the compositor MUST send the `permission_denied` error and MUST NOT
+            create the object. If the toplevel already has a placement object,
+            the compositor MUST send the `placement_exists` error.
+
+            This interface can only be obtained once per xdg_toplevel.
+        </description>
+        <arg name="id" type="new_id" interface="ext_toplevel_placement_v1"/>
+        <arg name="toplevel" type="object" interface="xdg_toplevel"/>
+      </request>
+
+      <enum name="error">
+        <entry name="placement_exists" value="0"
+               summary="the toplevel already has a placement object"/>
+        <entry name="permission_denied" value="1"
+               summary="client is not authorized by compositor policy"/>
+      </enum>
+  </interface>
+
+  <interface name="ext_toplevel_placement_v1" version="1">
+    <description summary="Interface for suggesting absolute toplevel placement">
+      This interface allows a privileged client to suggest an initial placement
+      position for its associated xdg_toplevel window, specified using absolute logical
+      coordinates relative to a specific wl_output.
+
+      Access to create and use this interface is subject to compositor policy.
+
+      The suggested placement is only a hint. The compositor retains full
+      authority to determine the final window position. Clients must
+      monitor configure events to determine the actual final placement.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the placement suggestion object"/>
+    </request>
+
+    <request name="suggest_position">
+      <description summary="suggest placement at absolute logical coordinates on an output">
+        Suggests an initial placement position (x, y) for the associated xdg_toplevel.
+        The coordinates are in logical pixels, relative to the top-left corner
+        of the specified wl_output's logical area.
+
+        This request serves as a hint to the compositor. The compositor MAY ignore
+        this hint entirely or modify the outcome based on its state or policies.
+        The client MUST NOT assume the suggestion will be honored precisely.
+
+        This suggestion is primarily intended for *initial* placement and should
+        ideally be sent before the first wl_surface.commit that maps the window.
+        Compositors are unlikely to substantially alter placement based on
+        suggestions sent after the window is already mapped and positioned.
+      </description>
+      <arg name="output" type="object" interface="wl_output" summary="target output"/>
+      <arg name="x" type="int" summary="suggested logical x coordinate relative to output"/>
+      <arg name="y" type="int" summary="suggested logical y coordinate relative to output"/>
+    </request>
+
+    <event name="configured">
+       <description summary="notify client of final placement outcome">
+         This event notifies the client of the output and logical position where
+         the compositor has actually placed the window, typically sent during
+         the initial configuration sequence after considering any placement
+         suggestions.
+
+         This allows the client to know the result of its suggestion and update
+         its stored state accurately. Compositors are not required to send this
+         event if no suggestion was made or considered relevant to the final
+         placement decision.
+
+         Standard xdg_toplevel.configure events remain the primary source for
+         ongoing size, state, and potentially position updates.
+       </description>
+       <arg name="output" type="object" interface="wl_output" summary="output the window is ultimately placed on"/>
+       <arg name="x" type="int" summary="final logical x coordinate relative to output"/>
+       <arg name="y" type="int" summary="final logical y coordinate relative to output"/>
+    </event>
+
+  </interface>
+
+   <interface name="wl_registry" version="1">
+       <request name="bind" type="destructor">
+         <description summary="bind an object to the display">
+           bind the ext_toplevel_placement_manager_v1 global
+         </description>
+         <arg name="name" type="uint" summary="unique name for the object"/>
+         <arg name="id" type="new_id" interface="ext_toplevel_placement_manager_v1" summary="bounded object"/>
+       </request>
+   </interface>
+
+</protocol>
