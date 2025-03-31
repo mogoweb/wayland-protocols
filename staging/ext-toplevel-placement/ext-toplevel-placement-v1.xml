@@ -31,7 +31,7 @@
 
         The compositor may choose to restrict the availability of this manager
         based on its internal policy. This might involve checking the client's
-        identity (e.g., via app_id or executable path) against a list of privileged
+        identity (e.g., via app_id or executable path) against a list of trusted
         clients configurable by the user.
         
       </description>
@@ -62,7 +62,7 @@
 
   <interface name="ext_toplevel_placement_v1" version="1">
     <description summary="Interface for suggesting absolute toplevel placement">
-      This interface allows a privileged client to suggest an initial placement
+      This interface allows trusted clients to suggest an initial placement
       position for its associated xdg_toplevel window, specified using absolute logical
       coordinates relative to a specific xdg_output.
 
