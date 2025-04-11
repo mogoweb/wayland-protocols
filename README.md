@@ -120,19 +120,24 @@ prefixed with both `wp_` and the operating system, for example
 
 For more information about namespaces, see [GOVERNANCE section 2.1].
 
-Each new non-experimental protocol XML file must include a major version
-postfix, starting with `-v1`. The purpose of this postfix is to make it
-possible to distinguish between backward incompatible major versions of
-the same protocol.
+Each new protocol XML file must include a major version postfix, starting
+with `-v1`. The purpose of this postfix is to make it possible to
+distinguish between backward incompatible major versions of the same
+protocol.
+
+The only exception to this rule are devel protocols which must include
+the postfix `-devel` instead.
 
 The interfaces in the protocol XML file should as well have the same
-major version postfix in their names.
+postfix in their names.
 
 For example, the protocol `foo-bar` may have a XML file
 `foo-bar/foo-bar-v1.xml`, consisting of the interface `wp_foo_bar_v1`,
 corresponding to the major version 1, as well as the newer version
 `foo-bar/foo-bar-v2.xml` consisting of the interface `wp_foo_bar_v2`,
 corresponding to the major version 2.
+The devel protocol `foo-baz` may have a XML file
+`foo-baz/foo-baz-devel.xml`, consisting of the interface `foo_baz_devel`.
 
 ## Use of RFC 2119 keywords
 
@@ -159,21 +164,6 @@ A protocol may receive backward compatible additions and changes. This
 is to be done in the general Wayland way, using `version` and `since` XML
 element attributes.
 
-## Backward incompatible protocol changes for experimental protocols
-
-A protocol in the experimental phase should expect to see backward incompatible
-changes at any time.
-
-Assuming a backward incompatible change is needed here, the procedure for how to
-do so is the following:
-
-- Increase the major version number in the protocol XML by 1.
-- Increase the major version number in all of the interfaces in the
-  XML by 1.
-- Reset the interface version number (interface version attribute) of all
-  the interfaces to 1.
-- Remove all of the `since` attributes.
-
 ## Backward incompatible protocol changes
 
 Protocols shall try to avoid backwards incompatible protocol changes during
@@ -192,18 +182,31 @@ do so is the following:
 
 ## The experimental phase
 
-Implementations choosing to support experimental protocols must work to
-support the latest version of the protocol at all times. It is therefore
-recommended that developers only opt-in to supporting protocols they
-have time and resources to actively develop.
+Protocols in the experimental phase are recommended to use an experimental
+devel protocol file and make all changes, compatible or incompatible, in that
+file. They do not have a major version and instead use the postfix `devel`.
+The interface versions shall always stay at zero. Devel protocols are not meant
+to be implemented directly.
+
+A protocol snapshot which is meant to be implemented by developers can be
+created when the need arises. A snapshot of the XML file in its current state
+shall be used to create the next major protocol version with the following
+procedure:
+
+- Make a copy of the XML file and replace the `-devel` postfix with the next
+  free major version.
+- Replace the `_devel` postfix in the protocol XML with the next free major
+  version.
+- Replace the `_devel` postfix in all of the interfaces in the XML with the next
+  free major version.
+
+Implementations choosing to support experimental protocols must work to support
+the latest major version of the protocol at all times. It is therefore
+recommended that developers only opt-in to supporting protocols they have time
+and resources to actively develop.
 
 A runtime option to enable features may also be useful to ensure users
 do not opt-in to potentially broken behavior.
-
-There is no expectation or requirement for stability between experimental
-protocol versions. It is therefore strongly advised that such consumer
-projects add build-time compile options to enable such protocols in order
-to avoid compile errors from protocol version mismatches.
 
 ## The staging phase
 
