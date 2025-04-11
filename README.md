@@ -22,7 +22,7 @@ phase, and the stable phase.
 In the experimental phase, a protocol may be added to wayland-protocols
 as `experimental/`. It is actively being developed, for example by
 iterating over it in a [merge request] or planning it in an [issue].
-Extensions in this phase can have backward incompatible changes.
+Protocols in this phase can have backward incompatible changes.
 
 During this phase, patches for clients and compositors are written as a test
 vehicle. Such patches should be merged with caution in clients and compositors,
@@ -35,9 +35,9 @@ directory of wayland-protocols and made part of a release. What this means is
 that implementation is encouraged in clients and compositors where the
 functionality it specifies is wanted.
 
-Extensions in staging cannot have backward incompatible changes, in that
-sense they are equal to stable extensions. However, they may be completely
-replaced with a new major version, or a different protocol extension altogether,
+Protocols in staging cannot have backward incompatible changes, in that
+sense they are equal to stable protocols. However, they may be completely
+replaced with a new major version, or a different protocol altogether,
 if design flaws are found in the staging phase.
 
 After a staging protocol has been sufficiently tested in the wild and
@@ -58,7 +58,7 @@ previously used by wayland-protocols, where protocols initially
 placed in the `unstable/` directory had certain naming conventions were
 applied, requiring a backward incompatible change to be declared "stable".
 
-During this phase, protocol extension interface names were, in addition to
+During this phase, protocol interface names were, in addition to
 the major version postfix, also prefixed with `z` to distinguish them from
 stable protocols.
 
@@ -147,7 +147,7 @@ Include the following disclaimer:
 Warning! The protocol described in this file is currently in the staging
 phase. Backward compatible changes may be added together with the
 corresponding interface version bump. Backward incompatible changes can
-only be done by creating a new major version of the extension.
+only be done by creating a new major version of the protocol.
 ```
 
 ## Use of RFC 2119 keywords
@@ -251,13 +251,13 @@ The procedure of doing this is the following:
   directory with the following:
 
 ```
-Disclaimer: This protocol extension has been marked stable. This copy is
+Disclaimer: This protocol has been marked stable. This copy is
 no longer used and only retained for backwards compatibility. The
 canonical version can be found in the stable/ directory.
 ```
 
-Note that the major version of the stable protocol extension, as well as
-all the interface versions and names, must remain unchanged.
+Note that the major version of the stable protocol, as well as all the
+interface versions and names, must remain unchanged.
 
 There are other requirements for declaring a protocol stable, see
 [GOVERNANCE section 2.3].
