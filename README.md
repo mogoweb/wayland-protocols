@@ -16,10 +16,10 @@ compositor and client developers. The governance rules are described in
 
 ## Protocol phases
 
-Protocols in general have three phases: the development phase, the staging
+Protocols in general have three phases: the experimental phase, the staging
 phase, and the stable phase.
 
-In the development phase, a protocol may be added to wayland-protocols
+In the experimental phase, a protocol may be added to wayland-protocols
 as `experimental/`. It is actively being developed, for example by
 iterating over it in a [merge request] or planning it in an [issue].
 Extensions in this phase can have backward incompatible changes.
