@@ -28,9 +28,9 @@ vehicle. Such patches should be merged with caution in clients and compositors,
 because the protocol can still change.
 
 When a protocol has reached a stage where it is ready for wider adoption,
-and after the [GOVERNANCE section 2.3] requirements have been met, it enters
-the "staging" phase. What this means is that implementation is encouraged in
-clients and compositors where the functionality it specifies is wanted.
+it enters the "staging" phase. What this means is that implementation is
+encouraged in clients and compositors where the functionality it specifies is
+wanted.
 
 Protocols in staging cannot have backward incompatible changes, in that
 sense they are equal to stable protocols. However, they may be completely
@@ -136,17 +136,6 @@ corresponding to the major version 1, as well as the newer version
 `foo-bar/foo-bar-v2.xml` consisting of the interface `wp_foo_bar_v2`,
 corresponding to the major version 2.
 
-## Include a disclaimer
-
-Include the following disclaimer:
-
-```
-Warning! The protocol described in this file is currently in the staging
-phase. Backward compatible changes may be added together with the
-corresponding interface version bump. Backward incompatible changes can
-only be done by creating a new major version of the protocol.
-```
-
 ## Use of RFC 2119 keywords
 
 Descriptions of all new protocols must use (in lowercase) and adhere to the
@@ -203,7 +192,7 @@ do so is the following:
   the interfaces to 1.
 - Remove all of the `since` attributes.
 
-## Experimental Protocols: Development Recommendations
+## The experimental phase
 
 Implementations choosing to support experimental protocols must work to
 support the latest version of the protocol at all times. It is therefore
@@ -218,21 +207,41 @@ protocol versions. It is therefore strongly advised that such consumer
 projects add build-time compile options to enable such protocols in order
 to avoid compile errors from protocol version mismatches.
 
-## Promoting a protocol from experimental
+## The staging phase
 
-The author of an experimental protocol can request that it be promoted at any point
-when it meets the requirements for the staging phase. At such time,
-the namespace prefix should be determined, and then the protocol should be
-renamed and merged into the appropriate directory, deleting the `experimental/`
-entry.
+Protocols can enter the wayland-protocols repository in this stage, without
+traversing the experimental phase. The author of an experimental protocol can
+request that it be promoted at any point.
 
-## Declaring a protocol stable
+In both cases, the protocol must meet the requirements of
+[GOVERNANCE section 2.3] for the staging phase.
+
+Protocols in the staging phase must carry the following disclaimer:
+
+```
+Warning! The protocol described in this file is currently in the staging
+phase. Backward compatible changes may be added together with the
+corresponding interface version bump. Backward incompatible changes can
+only be done by creating a new major version of the protocol.
+```
+
+When a protocol gets promoted from the experimental phase, the namespace prefix
+should be determined, and then the protocol should be renamed and merged into
+the appropriate directory, deleting the `experimental/` entry.
+
+## The stable phase
 
 Once it has been concluded that a protocol been proven adequate in
 production, and that it is deemed unlikely to receive any backward
 incompatible changes, it may be declared stable.
 
-The procedure of doing this is the following:
+There are other requirements for declaring a protocol stable, see
+[GOVERNANCE section 2.3].
+
+Note that the major version of the stable protocol, as well as all the
+interface versions and names, must remain unchanged.
+
+The procedure of promoting a protocol to the stable phase is the following:
 
 - Create a new directory in the `stable/` toplevel directory with the
   same name as the protocol directory in the `staging/` directory.
@@ -251,12 +260,6 @@ Disclaimer: This protocol has been marked stable. This copy is
 no longer used and only retained for backwards compatibility. The
 canonical version can be found in the stable/ directory.
 ```
-
-Note that the major version of the stable protocol, as well as all the
-interface versions and names, must remain unchanged.
-
-There are other requirements for declaring a protocol stable, see
-[GOVERNANCE section 2.3].
 
 ## Releases
 
