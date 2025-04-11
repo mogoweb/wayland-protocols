@@ -19,9 +19,8 @@ compositor and client developers. The governance rules are described in
 Protocols in general have three phases: the experimental phase, the staging
 phase, and the stable phase.
 
-In the experimental phase, a protocol may be added to wayland-protocols
-as `experimental/`. It is actively being developed, for example by
-iterating over it in a [merge request] or planning it in an [issue].
+In the experimental phase, a protocol is actively being developed, for example
+by iterating over it in a [merge request] or planning it in an [issue].
 Protocols in this phase can have backward incompatible changes.
 
 During this phase, patches for clients and compositors are written as a test
@@ -30,10 +29,8 @@ because the protocol can still change.
 
 When a protocol has reached a stage where it is ready for wider adoption,
 and after the [GOVERNANCE section 2.3] requirements have been met, it enters
-the "staging" phase. At this point, the protocol is added to the `staging/`
-directory of wayland-protocols and made part of a release. What this means is
-that implementation is encouraged in clients and compositors where the
-functionality it specifies is wanted.
+the "staging" phase. What this means is that implementation is encouraged in
+clients and compositors where the functionality it specifies is wanted.
 
 Protocols in staging cannot have backward incompatible changes, in that
 sense they are equal to stable protocols. However, they may be completely
@@ -54,8 +51,7 @@ will be made to a deprecated protocol.
 ## Legacy protocol phases
 
 An "unstable" protocol refers to a protocol categorization policy
-previously used by wayland-protocols, where protocols initially
-placed in the `unstable/` directory had certain naming conventions were
+previously used by wayland-protocols, where certain naming conventions were
 applied, requiring a backward incompatible change to be declared "stable".
 
 During this phase, protocol interface names were, in addition to
@@ -67,8 +63,9 @@ stable protocols.
 Depending on which stage a protocol is in, the protocol is placed within
 the toplevel directory containing the protocols with the same stage.
 Stable protocols are placed in the `stable/` directory, staging protocols
-are placed in the `staging/` directory, and deprecated protocols are
-placed in the `deprecated/` directory.
+are placed in the `staging/` directory, experimental protocols are placed
+in the `experimental/` directory, and deprecated protocols are placed in
+the `deprecated/` directory.
 
 Unstable protocols (see [Legacy protocol phases]) can be found in the
 `unstable/` directory, but new ones should never be placed here.
@@ -193,8 +190,7 @@ do so is the following:
 ## Backward incompatible protocol changes for staging protocols
 
 While not preferred, a protocol may at any stage, especially during the
-staging phase, when it is located in the `staging/` directory, see
-backward incompatible changes.
+staging phase, see backward incompatible changes.
 
 Assuming a backward incompatible change is needed, the procedure for how to
 do so is the following:
@@ -225,7 +221,7 @@ to avoid compile errors from protocol version mismatches.
 ## Promoting a protocol from experimental
 
 The author of an experimental protocol can request that it be promoted at any point
-when it meets the requirements for `staging/`. At such time,
+when it meets the requirements for the staging phase. At such time,
 the namespace prefix should be determined, and then the protocol should be
 renamed and merged into the appropriate directory, deleting the `experimental/`
 entry.
