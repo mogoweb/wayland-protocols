@@ -16,7 +16,7 @@ compositor and client developers. The governance rules are described in
 
 ## Protocol phases
 
-Protocols in general have three phases: the development phase, the testing
+Protocols in general have three phases: the development phase, the staging
 phase, and the stable phase.
 
 In the development phase, a protocol may be added to wayland-protocols
@@ -30,7 +30,7 @@ because the protocol can still change.
 
 When a protocol has reached a stage where it is ready for wider adoption,
 and after the [GOVERNANCE section 2.3] requirements have been met, it enters
-the "testing" phase. At this point, the protocol is added to the `staging/`
+the "staging" phase. At this point, the protocol is added to the `staging/`
 directory of wayland-protocols and made part of a release. What this means is
 that implementation is encouraged in clients and compositors where the
 functionality it specifies is wanted.
@@ -38,7 +38,7 @@ functionality it specifies is wanted.
 Extensions in staging cannot have backward incompatible changes, in that
 sense they are equal to stable extensions. However, they may be completely
 replaced with a new major version, or a different protocol extension altogether,
-if design flaws are found in the testing phase.
+if design flaws are found in the staging phase.
 
 After a staging protocol has been sufficiently tested in the wild and
 proven adequate, its maintainers and the community at large may declare it
@@ -144,7 +144,7 @@ corresponding to the major version 2.
 Include the following disclaimer:
 
 ```
-Warning! The protocol described in this file is currently in the testing
+Warning! The protocol described in this file is currently in the staging
 phase. Backward compatible changes may be added together with the
 corresponding interface version bump. Backward incompatible changes can
 only be done by creating a new major version of the extension.
@@ -190,10 +190,10 @@ do so is the following:
   the interfaces to 1.
 - Remove all of the `since` attributes.
 
-## Backward incompatible protocol changes for testing protocols
+## Backward incompatible protocol changes for staging protocols
 
 While not preferred, a protocol may at any stage, especially during the
-testing phase, when it is located in the `staging/` directory, see
+staging phase, when it is located in the `staging/` directory, see
 backward incompatible changes.
 
 Assuming a backward incompatible change is needed, the procedure for how to
@@ -244,7 +244,7 @@ The procedure of doing this is the following:
   decided to be declared stable into the new directory. The target name
   should be the same name as the protocol directory plus the version and
   the `.xml` suffix.
-- Remove the disclaimer about the protocol being in the testing phase.
+- Remove the disclaimer about the protocol being in the staging phase.
 - Update the `README` file in the staging directory and create a new
   `README` file in the new directory.
 - Replace the disclaimer in the protocol files left in the staging/
