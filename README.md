@@ -19,9 +19,12 @@ compositor and client developers. The governance rules are described in
 Protocols in general have three phases: the experimental phase, the staging
 phase, and the stable phase.
 
+Major versions of protocols in all phases, cannot have backward incompatible
+changes. However, they may be completely replaced with a new major version, or a
+different protocol altogether, if design flaws are found.
+
 In the experimental phase, a protocol is actively being developed, for example
 by iterating over it in a [merge request] or planning it in an [issue].
-Protocols in this phase can have backward incompatible changes.
 
 During this phase, patches for clients and compositors are written as a test
 vehicle. Such patches should be merged with caution in clients and compositors,
@@ -31,11 +34,6 @@ When a protocol has reached a stage where it is ready for wider adoption,
 it enters the "staging" phase. What this means is that implementation is
 encouraged in clients and compositors where the functionality it specifies is
 wanted.
-
-Protocols in staging cannot have backward incompatible changes, in that
-sense they are equal to stable protocols. However, they may be completely
-replaced with a new major version, or a different protocol altogether,
-if design flaws are found in the staging phase.
 
 After a staging protocol has been sufficiently tested in the wild and
 proven adequate, its maintainers and the community at large may declare it
@@ -176,10 +174,10 @@ do so is the following:
   the interfaces to 1.
 - Remove all of the `since` attributes.
 
-## Backward incompatible protocol changes for staging protocols
+## Backward incompatible protocol changes
 
-While not preferred, a protocol may at any stage, especially during the
-staging phase, see backward incompatible changes.
+Protocols shall try to avoid backwards incompatible protocol changes during
+the staging and stable phases.
 
 Assuming a backward incompatible change is needed, the procedure for how to
 do so is the following:
