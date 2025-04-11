@@ -208,6 +208,15 @@ and resources to actively develop.
 A runtime option to enable features may also be useful to ensure users
 do not opt-in to potentially broken behavior.
 
+Protocols in the experimental phase must carry the following disclaimer:
+
+```
+Warning! The protocol described in this file is currently in the
+experimental phase. Backwards incompatible major versions of the
+protocol are to be expected. Exposing this protocol without an opt-in
+mechanism is discouraged.
+```
+
 ## The staging phase
 
 Protocols can enter the wayland-protocols repository in this stage, without
