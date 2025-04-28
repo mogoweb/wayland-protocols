@@ -114,6 +114,10 @@
 	relative motion. The order of an absolute and relative motion event
 	originating from the same physical motion is not guaranteed.
 
+	If wl_pointer has version 5 or later, relative motion will be followed
+	by wl_pointer.frame. If sent in combination with wl_pointer.motion,
+	both will be part of the same frame.
+
 	If the client needs button events or focus state, it can receive them
 	from a wl_pointer object of the same seat that the wp_relative_pointer
 	object is associated with.
