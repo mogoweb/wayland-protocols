@@ -414,7 +414,10 @@
       allocations are sub-optimal. Compositors should not re-send the
       parameters if re-allocating the buffers would not result in a more optimal
       configuration. In particular, compositors should avoid sending the exact
-      same parameters multiple times in a row.
+      same parameters multiple times in a row. As there are situations in which
+      compositors can not predict if new allocation parameters would result in
+      optimal configuration, clients should protect themselves from unnecessary
+      re-allocations as much as possible.
 
       The tranche_target_device and tranche_formats events are grouped by
       tranches of preference. For each tranche, a tranche_target_device, one
