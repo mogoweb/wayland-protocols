@@ -818,7 +818,8 @@
 	The compositor may use this information to update the surface position
 	for example when dragging the top left corner. The compositor may also
 	use this information to adapt its behavior, e.g. choose an appropriate
-	cursor image.
+	cursor image. A value of none must not cause a protocol error but should
+	be ignored by the compositor.
       </description>
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
