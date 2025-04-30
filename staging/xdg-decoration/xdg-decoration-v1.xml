@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="xdg_decoration_v1">
+  <copyright>
+    Copyright © 2018 Simon Ser
+    Copyright © 2025 Dallas Strouse
+    Copyright © 2025 Neal Gompa
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <interface name="xdg_decoration_manager_v1" version="1">
+    <description summary="toplevel decoration manager">
+      This interface allows a compositor to announce support for one or more
+      types of decorations.
+
+      Window decorations are a set of window controls as deemed appropriate by
+      the party managing them, such as user interface components used to move,
+      resize and change a toplevel surface's state, drop shadows, and other visual styling
+      around a toplevel.
+
+      A client can use this protocol to request being decorated by a supporting
+      compositor.
+
+      If compositor and client do not negotiate the use of any type of
+      decoration using this protocol, clients continue to self-decorate as they
+      see fit.
+
+      Warning! The protocol described in this file is currently in the testing
+      phase. Backward compatible changes may be added together with the
+      corresponding interface version bump. Backward incompatible changes can
+      only be done by creating a new major version of the extension.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the decoration manager object">
+        Destroy the decoration manager. This doesn't destroy objects created
+        with the manager.
+      </description>
+    </request>
+
+    <request name="get_toplevel_decoration">
+      <description summary="create a new toplevel decoration object">
+        Create a new decoration object associated with the given toplevel.
+
+        Creating an xdg_toplevel_decoration from an xdg_toplevel which has a
+        buffer attached is a client error.
+      </description>
+      <arg name="id" type="new_id" interface="xdg_toplevel_decoration_v1"/>
+      <arg name="toplevel" type="object" interface="xdg_toplevel"/>
+    </request>
+  </interface>
+
+  <interface name="xdg_toplevel_decoration_v1" version="1">
+    <description summary="decoration object for a toplevel surface">
+      The decoration object allows the compositor to toggle server-side toplevel
+      decorations for a toplevel surface. The client can request to switch to
+      another mode.
+
+      The xdg_toplevel_decoration object must be destroyed before its xdg_toplevel.
+    </description>
+
+    <enum name="error">
+      <entry name="unconfigured_buffer" value="0" summary="xdg_toplevel has a buffer attached before configure"/>
+      <entry name="already_constructed" value="1" summary="xdg_toplevel already has a decoration object"/>
+      <entry name="orphaned" value="2" summary="xdg_toplevel destroyed before the decoration object"/>
+      <entry name="invalid_mode" value="3" summary="invalid mode"/>
+    </enum>
+
+    <enum name="mode">
+      <description summary="toplevel decoration modes">
+        These values describe toplevel decoration modes.
+      </description>
+      <entry name="client_side" value="1" summary="no server-side toplevel decorations"/>
+      <entry name="server_side" value="2" summary="server-side toplevel decorations"/>
+    </enum>
+
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the decoration object">
+        Destroys this object, and switches back to a mode without any server-side
+        decorations at the next commit. The client will draw decorations as it sees fit.
+
+        The xdg_toplevel_decoration object must be destroyed before its xdg_toplevel.
+      </description>
+    </request>
+
+    <enum name="decorations" bitfield="true">
+      <entry name="zero" value="0x0" summary="a zeroed bitfield">
+        <description>
+          The meaning of this value is defined by the event/request it is associated with.
+
+          It is only valid to send this value in a set_decorations request with a "server"
+          event type if the misc_decorations value was present in the associated
+          decoration_capabilities event, and doing so without that value being present will
+          raise an invalid_mode protocol error. This value will never exist on a
+          decoration_capabilities event type of "server".
+
+          If sent in a decoration_capabilities event with the "client" decoration drawer type,
+          the compositor has no preferences on how clients should draw their toplevels
+          if not using server-drawn decorations.
+        </description>
+      </entry>
+      <entry name="drop_shadows" value="0x1" summary="drop shadows">
+        <description>
+          The compositor will draw, or would prefer that the client draws, drop
+          shadows around the geometry specified in xdg-surface::set_window_geometry
+          and supporting protocols.
+        </description>
+      </entry>
+      <entry name="any_decorations" value="0x2147483648" summary="any type of decorations">
+        <description>
+          This represents what would traditionally be considered toplevel controls,
+          such as the titlebar and close button, but is not guaranteed to be so, if
+          it does not fit with a compositor's capabilities. The compositor is free to
+          draw any decorations as it sees fit with this value.
+
+          A compositor may pair this with any other values in a decoration_capabilities
+          "server" request if it supports drawing this type of decoration, but it
+          is a protocol error, and will raise invalid_mode, to set this value instead
+          of a zero value in a set_decorations "server" request.
+        </description>
+      </entry>
+    </enum>
+
+    <event name="decoration_capabilities">
+      <description summary="compositor capabilities">
+        This event will be always be sent once with the "client" supported_decoration_drawer argument,
+        and will be accompanied by a second decoration_capabilities event with a "server" supported_decoration_drawer
+        argument, if supported by the compositor.
+
+        If this event is ever sent without an accompanying "server" event type, including after object creation,
+        the client must not request server-drawn decorations, nor commit any new state using server-drawn decorations,
+        otherwise it will raise the invalid_mode error.
+
+        See the set_decorations request for how to signal which decoration mode the client would
+        like, and which decorations the client would like to have drawn for it.
+
+      	This event may be sent several times over the lifetime of xdg_toplevel_decoration object,
+        each time (including the initial event) with an xdg_surface::configure event;
+      	clients must re-configure themselves with the new described modes before committing their state,
+        otherwise an invalid_mode error is raised by the compositor.
+      </description>
+      <arg name="supported_decoration_drawer" type="uint" enum="mode" summary="non-zero if server supports decorations drawn by the server"/>
+      <arg name="decorations" type="uint" enum="decorations" summary="combination of decorations values"/>
+    </event>
+
+    <request name="set_decorations">
+      <description summary="set decorations the client supports">
+        Set the toplevel surface decoration mode. This informs the compositor that
+        the client would like to be drawn in the provided decoration mode, and if
+        specified, which decorations should be drawn by the compositor.
+
+        If the decoration_drawer argument is "client", the capabilities argument is
+        used to hint to the compositor which decorations are drawn by the client.
+
+        If the decoration_drawer argument is "server", the capabilities argument
+        must only contain valid arguments (sent in a previous decoration_capabilities event)
+        or zero, and the compositor will draw those decorations on behalf of the client.
+
+        Clients whose decoration mode depend on the xdg_toplevel state may send
+        a set_decorations request in response to an xdg_surface.configure event and wait
+        for the next xdg_surface.configure event to prevent unwanted state.
+        Such clients are responsible for preventing configure loops and must
+        make sure not to send multiple successive set_decorations requests with the
+        same decoration mode.
+
+        If an invalid or unknown mode is supplied by the client, the
+        invalid_mode protocol error is raised by the compositor.
+      </description>
+      <arg name="decoration_drawer" type="uint" enum="mode" summary="who should draw decorations"/>
+      <arg name="capabilities" type="uint" enum="decorations" summary="combination of decorations values"/>
+    </request>
+  </interface>
+</protocol>
+
