@@ -65,21 +65,26 @@ standardization.
    "xdg_wm_base").
 2. Protocols in a namespace may optionally use the namespace followed by a dash
    in the name (e.g. "xdg-shell").
-3. The "xdg" namespace is established for protocols letting clients
+
+#### 2.1.1. Staging and stable protocol namespaces
+
+1. The "xdg" namespace is established for protocols letting clients
    configure their surfaces as "windows", allowing clients to affect how they
    are managed.
-4. The "wp" namespace is established for protocols generally useful to Wayland
+2. The "wp" namespace is established for protocols generally useful to Wayland
    implementations (i.e. "plumbing" protocols).
-5. The "ext" namespace is established as a general catch-all for protocols that
+3. The "ext" namespace is established as a general catch-all for protocols that
    fit into no other namespace.
 
-#### 2.1.1 Experimental protocol namespacing
+#### 2.1.2 Experimental protocol namespacing
 
 1. Experimental protocols begin with the "xx" namespace and do not include any relation
    to namespaces specified in section 2.1.
 2. Namespacing of experimental protocols is determined upon promotion.
 
 ### 2.2. Protocol inclusion requirements
+
+### 2.2.1 Staging and stable protocol inclusion requirements
 
 1. All protocols found in the "xdg" and "wp" namespaces at the time of writing
    are grandfathered into their respective namespace without further discussion.
@@ -100,7 +105,7 @@ standardization.
    by at least one member project. For the purposes of this clause, reviews from
    the individual protocol author(s) are disregarded.
 
-#### 2.2.1 Experimental protocol inclusion requirements
+#### 2.2.2 Experimental protocol inclusion requirements
 
 1. Experimental protocols must be valid XML which can be consumed by wayland-scanner.
 2. All such protocols must be created with a proposal merge request outlining the
