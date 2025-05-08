@@ -28,6 +28,10 @@ Protocols in the staging phase should try to minimize backward-incompatible
 changes, and protocols in the stable phase should avoid backward-incompatible
 changes.
 
+Anything that is not merged upstream can be iterated and broken freely, but
+care should be taken to ensure that there are no two protocols with the same
+name and version but a different API.
+
 During the experimental phase, patches for clients and compositors are written
 as a test vehicle. Such patches should be merged with caution in clients and
 compositors, because the protocol can still change.
