@@ -64,9 +64,8 @@
       a surface, which can be used to offload such operations to the compositor.
       The default factor is UINT32_MAX.
 
-      This object has to be destroyed before the associated wl_surface. Once the
-      wl_surface is destroyed, all request on this object will raise the
-      no_surface error.
+      If the associated wl_surface is destroyed, all requests except "destroy"
+      on this object will raise the no_surface error.
     </description>
 
     <enum name="error">
