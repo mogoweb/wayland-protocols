@@ -19,12 +19,18 @@ compositor and client developers. The governance rules are described in
 Protocols in general have three phases: the experimental phase, the staging
 phase, and the stable phase.
 
+Anything that is merged upstream is in one of those phases, with the exception
+of deprecated protocols and protocols in legacy protocol phases. Anything that
+is not merged upstream can be iterated and broken freely, but care should be
+taken to ensure that there are no two protocols with the same name and version
+but different API.
+
 Major versions of protocols in all phases, cannot have backward incompatible
 changes. However, they may be completely replaced with a new major version, or a
 different protocol altogether, if design flaws are found.
 
-In the experimental phase, a protocol is actively being developed, for example
-by iterating over it in a [merge request] or planning it in an [issue].
+In the experimental phase, a protocol is actively being developed and iterated
+upon, not trying to avoid incompatible changes.
 
 During this phase, patches for clients and compositors are written as a test
 vehicle. Such patches should be merged with caution in clients and compositors,
