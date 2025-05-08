@@ -159,21 +159,6 @@ A protocol may receive backward compatible additions and changes. This
 is to be done in the general Wayland way, using `version` and `since` XML
 element attributes.
 
-## Backward incompatible protocol changes for experimental protocols
-
-A protocol in the experimental phase should expect to see backward incompatible
-changes at any time.
-
-Assuming a backward incompatible change is needed here, the procedure for how to
-do so is the following:
-
-- Increase the major version number in the protocol XML by 1.
-- Increase the major version number in all of the interfaces in the
-  XML by 1.
-- Reset the interface version number (interface version attribute) of all
-  the interfaces to 1.
-- Remove all of the `since` attributes.
-
 ## Backward incompatible protocol changes
 
 Protocols shall try to avoid backwards incompatible protocol changes during
@@ -200,10 +185,10 @@ have time and resources to actively develop.
 A runtime option to enable features may also be useful to ensure users
 do not opt-in to potentially broken behavior.
 
-There is no expectation or requirement for stability between experimental
-protocol versions. It is therefore strongly advised that such consumer
-projects add build-time compile options to enable such protocols in order
-to avoid compile errors from protocol version mismatches.
+There is no expectation or requirement to avoid backwards incompatible changes
+in this phase. It is therefore strongly advised that such consumer projects add
+build-time compile options to enable such protocols in order to avoid compile
+errors from protocol version mismatches.
 
 ## The staging phase
 
