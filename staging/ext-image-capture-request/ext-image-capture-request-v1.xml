@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="ext_image_capture_request_v1">
+  <copyright>
+    Copyright © 2025 Anna (navi) Figueiredo Gomes
+
+    Permission to use, copy, modify, distribute, and sell this
+    software and its documentation for any purpose is hereby granted
+    without fee, provided that the above copyright notice appear in
+    all copies and that both that copyright notice and this permission
+    notice appear in supporting documentation, and that the name of
+    the copyright holders not be used in advertising or publicity
+    pertaining to distribution of the software without specific,
+    written prior permission.  The copyright holders make no
+    representations about the suitability of this software for any
+    purpose.  It is provided "as is" without express or implied
+    warranty.
+
+    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+    THIS SOFTWARE.
+  </copyright>
+
+  <description summary="request an image source">
+    This protocol allows a client to request an ext_image_capture_source_v1
+    from the compositor. It allows any clients to acquire a capture source
+    without having access to privileged source managers.
+
+    The mechanism used by the compositor to select a source is defined by
+    compositor policy. Compositor may choose to render a special selection
+    interface, delegate this to a privileged helper by way of the
+    ext_image_capture_request_source_v1 interface, return a pre-defined
+    source, or implement any policy deemed appropriate.
+
+    The key words "must", "must not", "required", "shall", "shall not",
+    "should", "should not", "recommended",  "may", and "optional" in this
+    document are to be interpreted as described in IETF RFC 2119.
+
+    Warning! The protocol described in this file is currently in the testing
+    phase. Backward compatible changes may be added together with the
+    corresponding interface version bump. Backward incompatible changes can
+    only be done by creating a new major version of the extension.
+  </description>
+
+  <interface name="ext_image_capture_request_manager_v1" version="1">
+    <description summary="request an image capture source">
+      This interface is a manager that allows requesting for a image
+      capture sources.
+    </description>
+
+    <request name="request">
+      <description summary="request a source">
+        Request an image capture source.
+      </description>
+      <arg name="request" type="new_id" interface="ext_image_capture_request_v1"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager">
+        All objects created by the manager will still remain valid, until their
+        appropriate destroy request has been called.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="ext_image_capture_request_v1" version="1">
+    <event name="source">
+      <description summary="a source was selected">
+        This event shall be emitted once a selection has been made.
+
+        After receiving this event, the client must destroy the object.
+      </description>
+      <arg name="source" type="new_id" interface="ext_image_capture_source_v1"/>
+    </event>
+
+    <event name="cancelled">
+      <description summary="the request was canceled">
+        This event shall be emitted if no selection has been made.
+
+        After receiving this event, the client must destroy the object.
+      </description>
+    </event>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager">
+        Destroys the object. This request can be sent at any time by the client.
+
+        Any following response by a matching ext_image_capture_request_pending_v1
+        must then be ignored by the compositor.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="ext_image_capture_request_source_v1" version="1">
+    <description summary="source for image capture requests">
+      This interface allows a privileged client to respond to image copy requests.
+
+      The compositor may choose to restrict this interface to a special client
+      launched by the compositor itself, to all privileged clients, expose
+      it to all clients, or expose it to no clients at all. This is compositor
+      policy.
+
+      If multiple clients bind to this interface, it is compositor policy which
+      client responds to any given request.
+    </description>
+
+    <event name="request">
+      <description summary="an image capture source was requested">
+        A client has requested an image source via ext_image_capture_request_manager_v1.request.
+      </description>
+      <arg name="request" type="new_id" interface="ext_image_capture_request_pending_v1"/>
+    </event>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager">
+        All objects created by the source will still remain valid, until their
+        appropriate source or cancel request has been called.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="ext_image_capture_request_pending_v1" version="1">
+    <description summary="pending toplevel request">
+      This interface represents a pending request for a foreign toplevel.
+    </description>
+
+    <request name="send_source" type="destructor">
+      <description summary="provide an image capture source">
+        Provides an image capture source. The compositor must follow by
+        sending ext_image_capture_request.source on the corresponding request
+        with the same image capture source.
+
+        The client must call destroy on the provided image capture source after
+        calling this request.
+      </description>
+      <arg name="source" type="object" interface="ext_image_capture_source_v1"/>
+    </request>
+
+    <request name="cancel" type="destructor">
+      <description summary="provide no image capture source">
+        Cancel the image source request. The compositor must follow by sending
+        ext_image_capture_request.cancelled on the corresponding request.
+      </description>
+    </request>
+  </interface>
+</protocol>
