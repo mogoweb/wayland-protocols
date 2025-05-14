@@ -159,9 +159,10 @@
 	This allows changes to the xdg_output properties to be seen as
 	atomic, even if they happen via multiple events.
 
-	For objects version 3 onwards, this event is deprecated. Compositors
-	are not required to send it anymore and must send wl_output.done
-	instead.
+	For objects version 3 onwards, this event is deprecated. If the version of
+	the wl_output is at least 2, the compositor must send a wl_output.done
+	event instead. If the version of the wl_output is 1, neither event will be
+	sent.
       </description>
     </event>
 
