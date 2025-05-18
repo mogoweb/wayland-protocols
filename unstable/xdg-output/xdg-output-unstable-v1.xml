@@ -42,6 +42,10 @@
     to move the desktop specific concepts (such as output location within the
     global compositor space, etc.) out of the core wl_output protocol.
 
+    Compositors implementing version 3 of this protocol must support
+    wl_output v2 or higher. Clients binding to this protocol at version 3 must
+    also bind to wl_output objects at version 2 or higher.
+
     Warning! The protocol described in this file is experimental and
     backward incompatible changes may be made. Backward compatible
     changes may be added together with the corresponding interface
