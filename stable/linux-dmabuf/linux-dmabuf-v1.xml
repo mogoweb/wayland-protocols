@@ -81,9 +81,6 @@
           client. If the client uses a failed wl_buffer as an argument to any
           request, the behaviour is compositor implementation-defined.
 
-      For all DRM formats and unless specified in another protocol extension,
-      pre-multiplied alpha is used for pixel values.
-
       Unless specified otherwise in another protocol extension, implicit
       synchronization is used. In other words, compositors and clients must
       wait and signal fences implicitly passed via the DMA-BUF's reservation
