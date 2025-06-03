@@ -106,7 +106,7 @@
     tool was used on are removed.
   </description>
 
-  <interface name="zwp_tablet_manager_v2" version="2">
+  <interface name="zwp_tablet_manager_v2" version="3">
     <description summary="controller object for graphic tablet devices">
       An object that provides access to the graphics tablets available on this
       system. All tablets are associated with a seat, to get access to the
@@ -130,7 +130,7 @@
     </request>
   </interface>
 
-  <interface name="zwp_tablet_seat_v2" version="2">
+  <interface name="zwp_tablet_seat_v2" version="3">
     <description summary="controller object for graphic tablet devices of a seat">
       An object that provides access to the graphics tablets available on this
       seat. After binding to this interface, the compositor sends a set of
@@ -181,7 +181,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_tablet_tool_v2" version="2">
+  <interface name="zwp_tablet_tool_v2" version="3">
     <description summary="a physical tablet tool">
       An object that represents a physical tool that has been, or is
       currently in use with a tablet in this seat. Each zwp_tablet_tool_v2
@@ -567,7 +567,7 @@
     </enum>
   </interface>
 
-  <interface name="zwp_tablet_v2" version="2">
+  <interface name="zwp_tablet_v2" version="3">
     <description summary="graphics tablet device">
       The zwp_tablet_v2 interface represents one graphics tablet device. The
       tablet interface itself does not generate events; all events are
@@ -683,7 +683,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_ring_v2" version="2">
+  <interface name="zwp_tablet_pad_ring_v2" version="3">
     <description summary="pad ring">
       A circular interaction area, such as the touch ring on the Wacom Intuos
       Pro series tablets.
@@ -797,7 +797,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_strip_v2" version="2">
+  <interface name="zwp_tablet_pad_strip_v2" version="3">
     <description summary="pad strip">
       A linear interaction area, such as the strips found in Wacom Cintiq
       models.
@@ -913,7 +913,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_group_v2" version="2">
+  <interface name="zwp_tablet_pad_group_v2" version="3">
     <description summary="a set of buttons, rings and strips">
       A pad group describes a distinct (sub)set of buttons, rings and strips
       present in the tablet. The criteria of this grouping is usually positional,
@@ -1061,7 +1061,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_v2" version="2">
+  <interface name="zwp_tablet_pad_v2" version="3">
     <description summary="a set of buttons, rings, strips and dials">
       A pad device is a set of buttons, rings, strips and dials
       usually physically present on the tablet device itself. Some
@@ -1193,7 +1193,11 @@
 
     <event name="enter">
       <description summary="enter event">
-	Notification that this pad is focused on the specified surface.
+        Notification that this pad is focused on the specified surface.
+
+        If the tablet is not paired with a zwp_tablet_pad_v2 and the client
+        requests zwp_tablet_pad_v2 version 3 or later, this event is never sent.
+        Instead, the compositor sends zwp_tablet_pad_v2.enter_unpaired.
       </description>
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="tablet" type="object" interface="zwp_tablet_v2" summary="the tablet the pad is attached to"/>
@@ -1219,9 +1223,94 @@
 	the pad itself.
       </description>
     </event>
+
+    <!-- Version 3 additions -->
+
+    <event name="pair" since="3">
+      <description summary="pad and tablet pairing">
+	Notification that this pad is permanently logically paired with
+	the given zwp_tablet_v2.
+
+	If this event is sent, the pad is logically (and often physically)
+	part of the zwp_tablet_v2 given in this event. The
+	zwp_tablet_pad_v2.bustype and zwp_tablet_pad_v2.id are only sent
+	if the values differ from zwp_tablet_v2.bustype and zwp_tablet_v2.id,
+	respectively. A zwp_tablet_pad_v2 that is paired with a zwp_tablet_v2
+	never sends zwp_tablet_v2.enter_unpaired argument.
+
+	If this event is not sent, this pad is a standalone pad (e.g. Wacom
+	ExpressKey Remote). A standlone pad does not send
+	zwp_tablet_pad_v2.enter, instead it sends zwp_tablet_pad_v2.enter_unpaired.
+
+	Some standalone tablet pads (e.g. Wacom ExpressKey Remote) may
+	be used in both standalone or logically paired mode. Where the
+	pad changes mode the compositor must send a zwp_tablet_pad_v2.remove
+	and create a new zwp_tablet_pad_v2 object with the appropriate
+	zwp_tablet_pad_v2.pair event.
+
+	This event is sent in the initial burst of events before the
+	zwp_tablet_pad_v2.done event. This event must be sent for any
+	logically paired tablet pad for any client supporting
+	zwp_tablet_pad_v2 version 3 or later.
+      </description>
+      <arg name="tablet" type="object" interface="zwp_tablet_v2" summary="the tablet the pad is attached to"/>
+    </event>
+
+    <event name="bustype" since="3">
+      <description summary="pad bus type">
+	The bustype argument is one of the BUS_ defines in the Linux kernel's
+	linux/input.h
+
+	If the pad has no known bustype or the bustype cannot be
+	queried, this event is not sent.
+
+	If the pad is logically paired with a zwp_tablet_v2 device and
+	the bustype of the zwp_tablet_pad_v2 is identical to the zwp_tablet_v2,
+	this event may not be sent. The client should use the zwp_tablet_v2.bustype
+	event information instead. See zwp_tablet_pad_v2.pair for details on
+	logical pairings.
+
+	This event is sent in the initial burst of events before the
+	zwp_tablet_pad_v2.done event.
+      </description>
+      <arg name="bustype" type="uint" enum="zwp_tablet_v2.bustype" summary="bus type"/>
+    </event>
+
+    <event name="id" since="3">
+      <description summary="pad vendor/product id">
+	The vendor and product IDs for the tablet pad device.
+
+	The interpretation of the id depends on the zwp_tablet_pad_v2.bustype.
+	If the device has no vendor/product ID, this event is not sent.
+	This can happen for virtual devices or non-USB devices, for instance.
+
+	If the pad is logically paired with a zwp_tablet_v2 device and
+	the id of the zwp_tablet_pad_v2 is identical to the zwp_tablet_v2,
+	this event may not be sent. The client should use the zwp_tablet_v2.id
+	event information instead. See zwp_tablet_pad_v2.pair for details on
+	logical pairings.
+
+	This event is sent in the initial burst of events before the
+	zwp_tablet_pad_v2.done event.
+      </description>
+      <arg name="vid" type="uint" summary="vendor id"/>
+      <arg name="pid" type="uint" summary="product id"/>
+    </event>
+
+    <event name="enter_unpaired" since="3">
+      <description summary="enter event">
+	Notification that this pad is focused on the specified surface but not attached
+	with a zwp_tablet.
+
+	This event is only sent if the tablet is not paired with a tablet, see
+	zwp_tablet_pad_v2.pair.
+      </description>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface the pad is focused on"/>
+    </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_dial_v2" version="2">
+  <interface name="zwp_tablet_pad_dial_v2" version="3">
     <description summary="pad dial">
       A rotary control, e.g. a dial or a wheel.
 
