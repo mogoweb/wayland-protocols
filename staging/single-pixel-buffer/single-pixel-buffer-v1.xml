@@ -54,9 +54,6 @@
       <description summary="create a 1×1 buffer from 32-bit RGBA values">
         Create a single-pixel buffer from four 32-bit RGBA values.
 
-        Unless specified in another protocol extension, the RGBA values use
-        pre-multiplied alpha.
-
         The width and height of the buffer are 1.
       </description>
       <arg name="id" type="new_id" interface="wl_buffer"/>
