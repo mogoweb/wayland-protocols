@@ -47,7 +47,7 @@
     interface version number is reset.
   </description>
 
-  <interface name="zwp_text_input_v3" version="1">
+  <interface name="zwp_text_input_v3" version="2">
     <description summary="text input">
       The zwp_text_input_v3 interface represents text input and input methods
       associated with a seat. It provides enter/leave events to follow the
@@ -433,9 +433,22 @@
       </description>
       <arg name="serial" type="uint"/>
     </event>
+
+    <event name="language">
+      <description summary="notify of language selection">
+        Notify the application of language used by the input method.
+
+        This event will be sent on creation if known and for all subsequent changes.
+
+        The language should be specified as an IETF BCP 47 tag.
+        Setting an empty string will reset any known language back to the default unknown state.
+      </description>
+      <arg name="language" type="string" summary="new language set by IME"/>
+    </event>
+
   </interface>
 
-  <interface name="zwp_text_input_manager_v3" version="1">
+  <interface name="zwp_text_input_manager_v3" version="2">
     <description summary="text input manager">
       A factory for text-input objects. This object is a global singleton.
     </description>
