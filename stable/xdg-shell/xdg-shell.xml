@@ -1297,10 +1297,10 @@
 	button press, key press, or touch down event. The serial number of the
 	event should be passed as 'serial'.
 
-	The parent of a grabbing popup must either be an xdg_toplevel surface or
-	another xdg_popup with an explicit grab. If the parent is another
-	xdg_popup it means that the popups are nested, with this popup now being
-	the topmost popup.
+	If there is an explicit grab already taken, the parent of a grabbing
+	popup must be an xdg_popup with an explicit grab. If the parent is
+	another xdg_popup it means that the popups are nested, with this popup
+	now being the topmost popup.
 
 	Nested popups must be destroyed in the reverse order they were created
 	in, e.g. the only popup you are allowed to destroy at all times is the
@@ -1314,12 +1314,11 @@
 	the parent of the popup, if that parent previously had an explicit grab.
 
 	If the parent is a grabbing popup which has already been dismissed, this
-	popup will be immediately dismissed. If the parent is a popup that did
-	not take an explicit grab, an error will be raised.
+	popup will be immediately dismissed.
 
 	During a popup grab, the client owning the grab will receive pointer
 	and touch events for all their surfaces as normal (similar to an
-	"owner-events" grab in X11 parlance), while the top most grabbing popup
+	"owner-events" grab in X11 parlance), while the topmost grabbing popup
 	will always have keyboard focus.
       </description>
       <arg name="seat" type="object" interface="wl_seat"
