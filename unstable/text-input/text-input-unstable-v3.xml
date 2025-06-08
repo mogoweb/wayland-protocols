@@ -114,6 +114,11 @@
 
         The changes must be applied by the compositor after issuing a
         zwp_text_input_v3.commit request.
+
+        Some clients need to reset the input method state.
+        To reset the input method state, the client needs to send the disable
+        request, the enable request, and the commit request sequence.
+        The compositing manager will reset the input method.
       </description>
     </request>
 
@@ -124,6 +129,11 @@
 
         State set with this request is double-buffered. It will get applied on
         the next zwp_text_input_v3.commit request.
+
+        Some clients need to reset the input method state.
+        To reset the input method state, the client needs to send the disable
+        request, the enable request, and the commit request sequence.
+        The compositing manager will reset the input method.
       </description>
     </request>
 
