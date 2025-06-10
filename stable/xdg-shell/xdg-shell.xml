@@ -571,10 +571,6 @@
 	Acking a configure event that was never sent raises an invalid_serial
 	error.
 
-	A client is not required to commit immediately after sending
-	an ack_configure request - it may even ack_configure several times
-	before its next surface commit.
-
 	A client may send multiple ack_configure requests before committing, but
 	only the last request sent before a commit indicates which configure
 	event the client really is responding to.
@@ -608,6 +604,10 @@
 	Clients should arrange their surface for the new states, and then send
 	an ack_configure request with the serial sent in this configure event at
 	some point before committing the new surface.
+
+	The client must send an ack_configure request and commit the surface
+	within a reasonable amount of time. The surface must be committed even if
+	there are no visible changes in response to the configure event.
 
 	If the client receives multiple configure events before it can respond
 	to one, it is free to discard all but the last event it received.
