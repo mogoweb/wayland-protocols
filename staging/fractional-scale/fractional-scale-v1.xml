@@ -95,6 +95,7 @@
         compositor suggests that the client should use.
 
         The sent scale is the numerator of a fraction with a denominator of 120.
+        The number shall be greater than 0.
       </description>
       <arg name="scale" type="uint" summary="the new preferred scale"/>
     </event>
