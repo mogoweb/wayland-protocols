@@ -566,6 +566,8 @@
 	information to move a surface to the top left only when the client has
 	drawn itself for the maximized or fullscreen state.
 
+	The following applies to protocol version 6 or earlier.
+
 	If the client receives multiple configure events before it
 	can respond to one, it only has to ack the last configure event.
 	Acking a configure event that was never sent raises an invalid_serial
@@ -589,6 +591,23 @@
 	request referencing a serial from a configure event issued before the
 	event identified by the last ack_configure request for the same
 	xdg_surface. Doing so will raise an invalid_serial error.
+
+	The following applies to protocol versions 7 or later.
+
+	Since version 7, ack_configure is double-buffered state. See
+	wl_surface.commit for details.
+
+	The client may send ack_configure multiple times to change the acked
+	configuration sequence before committing. Committing a configuration
+	sequence consumes that sequence and all earlier sequences.
+
+	A commit must not contain a configuration sequences that has already
+	been consumed. Doing so will raise an invalid_serial error.
+
+	Committing a configuration sequence indicates that the state in the
+	commit is suitable for the state requested by that configuration
+	sequence. If a commit does not contain a configuration sequence, the
+	committed sequence is unchanged.
       </description>
       <arg name="serial" type="uint" summary="the serial from the configure event"/>
     </request>
