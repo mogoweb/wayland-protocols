@@ -47,7 +47,7 @@
     interface version number is reset.
   </description>
 
-  <interface name="zwp_text_input_v3" version="1">
+  <interface name="zwp_text_input_v3" version="2">
     <description summary="text input">
       The zwp_text_input_v3 interface represents text input and input methods
       associated with a seat. It provides enter/leave events to follow the
@@ -431,6 +431,85 @@
         receiving a zwp_text_input_v3.done event with a matching serial.
       </description>
       <arg name="serial" type="uint"/>
+    </event>
+
+    <!-- Version 2 additions -->
+    <enum name="preedit_underline">
+      <description summary="style of preedit underline">
+        Underline style to apply to sections of the preedit string.
+      </description>
+      <entry name="single" value="0" summary="single underline"/>
+      <entry name="double" value="1" summary="double underline"/>
+      <entry name="error" value="2" summary="error underline"/>
+    </enum>
+
+    <event name="preedit_underline" since="2">
+      <description summary="pre-edit underline">
+        Notify of underlining style hints for the pre-edit string. This
+        event is always sent together with a zwp_text_input_v3.preedit_string
+        event.
+
+        The parameters begin and end are counted in bytes relative to the
+        beginning of the text buffer submitted through
+        zwp_text_input_v3.preedit_string.
+
+        Multiple events may be submitted if the preedit string has different
+        sections. Compositors must not send multiple
+        zwp_text_input_v3.preedit_underline events with overlapping extents.
+
+        Clients may optionally honor this request. For parts of the preedit
+        string that are not covered by any zwp_text_input_v3.preedit_underline
+        event, or if no events were sent, the text will be considered not
+        underlined.
+
+        Values set with this event are double-buffered. They must be applied
+        and reset on the next zwp_text_input_v3.done event.
+      </description>
+      <arg name="begin" type="int"/>
+      <arg name="end" type="int"/>
+      <arg name="underline" type="int" enum="preedit_underline"/>
+    </event>
+
+    <enum name="preedit_hint">
+      <description summary="context hint for preedit">
+        Context hints to identify sections of the preedit string.
+      </description>
+      <entry name="info1" value="0" summary="info level 1"/>
+      <entry name="info2" value="1" summary="info level 2"/>
+      <entry name="info3" value="2" summary="info level 3"/>
+      <entry name="warning1" value="3" summary="warning level 1"/>
+      <entry name="warning2" value="4" summary="warning level 2"/>
+      <entry name="warning3" value="5" summary="warning level 3"/>
+      <entry name="error1" value="6" summary="error level 1"/>
+      <entry name="error2" value="7" summary="error level 2"/>
+      <entry name="error3" value="8" summary="error level 3"/>
+    </enum>
+
+    <event name="preedit_hint" since="2">
+      <description summary="pre-edit">
+        Notify of contextual hints for the pre-edit string. This
+        event is always sent together with a zwp_text_input_v3.preedit_string
+        event.
+
+        The parameters begin and end are counted in bytes relative to the
+        beginning of the text buffer submitted through
+        zwp_text_input_v3.preedit_string.
+
+        Multiple events may be submitted if the preedit string has different
+        sections. Compositors must not send multiple
+        zwp_text_input_v3.preedit_underline events with overlapping extents.
+
+        Clients are free to pick any visuals to represent the available hints,
+        including none at all. For parts of the preedit string that are not
+        covered by any zwp_text_input_v3.preedit_hint event, or if no events
+        were sent, the text will be considered unhinted.
+
+        Values set with this event are double-buffered. They must be applied
+        and reset on the next zwp_text_input_v3.done event.
+      </description>
+      <arg name="begin" type="int"/>
+      <arg name="end" type="int"/>
+      <arg name="hint" type="int" enum="preedit_hint"/>
     </event>
   </interface>
 
