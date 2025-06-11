@@ -1,4 +1,5 @@
 prog_scan_sh = find_program('scan.sh')
+prog_true = find_program('true')
 
 libwayland = [
 	dependency('wayland-client'),
@@ -100,7 +101,7 @@ foreach protocol_file : protocol_files
 			test_source,
 			client_header,
 			server_header,
-			code
+			code,
 		],
 		link_args: extra_linker_flags,
 		dependencies: libwayland,
@@ -111,7 +112,7 @@ foreach protocol_file : protocol_files
 			'-Werror' ],
 		install: false,
 	)
-	test(test_name, pedantic_test_executable)
+	test(test_name, prog_true, depends : [pedantic_test_executable])
 
 	# Check that the header
 	if not protocol_file.contains('xdg-foreign-unstable-v1')
