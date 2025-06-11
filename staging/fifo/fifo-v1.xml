@@ -117,11 +117,12 @@
         update became active at the deadline.
 
         The constraint must be ignored if the surface is a subsurface in
-        synchronized mode. If the surface is not being updated by the
-        compositor (off-screen, occluded) the compositor may ignore the
-        constraint. Clients must use an additional mechanism such as
-        frame callbacks or timestamps to ensure throttling occurs under
-        all conditions.
+        effectively synchronized mode when the constraint is committed.
+
+        If the surface is not being updated by the compositor (off-screen,
+        occluded) the compositor may ignore the constraint. Clients must
+        use an additional mechanism such as frame callbacks or timestamps
+        to ensure throttling occurs under all conditions.
 
         "wait_barrier" is double-buffered state, see wl_surface.commit.
 
