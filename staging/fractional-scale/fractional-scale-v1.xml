@@ -44,7 +44,7 @@
     rounding algorithm for subsurface position and size is not defined.
   </description>
 
-  <interface name="wp_fractional_scale_manager_v1" version="1">
+  <interface name="wp_fractional_scale_manager_v2" version="1">
     <description summary="fractional surface scale information">
       A global interface for requesting surfaces to use fractional scales.
     </description>
@@ -76,7 +76,7 @@
     </request>
   </interface>
 
-  <interface name="wp_fractional_scale_v1" version="1">
+  <interface name="wp_fractional_scale_v1" version="2">
     <description summary="fractional scale interface to a wl_surface">
       An additional interface to a wl_surface object which allows the compositor
       to inform the client of the preferred scale.
@@ -95,8 +95,24 @@
         compositor suggests that the client should use.
 
         The sent scale is the numerator of a fraction with a denominator of 120.
+
+        This event is deprecated in favor of preferred_scale2. It will not be
+        emitted when having bound version 2 or higher.
       </description>
       <arg name="scale" type="uint" summary="the new preferred scale"/>
+    </event>
+
+    <!-- Version 2 additions -->
+
+    <event name="preferred_scale2" since="2">
+      <description summary="notify of new preferred scale">
+        Notification of a new preferred scale for this surface that the
+        compositor suggests that the client should use.
+
+        The sent scale is the numerator and denomanator of a fraction.
+      </description>
+      <arg name="scale_num" type="uint" summary="the new preferred scale numerator"/>
+      <arg name="scale_denom" type="uint" summary="the new preferred scale denominator"/>
     </event>
   </interface>
 </protocol>
