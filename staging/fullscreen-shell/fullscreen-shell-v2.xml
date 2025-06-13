@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="fullscreen_shell_v2">
+  <copyright>
+    Copyright © 2023 Simon Ser
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <interface name="wp_fullscreen_shell_v2" version="1">
+    <description summary="fullscreen shell">
+      This interface provides a mechanism for a client to display simple
+      full-screen surfaces.
+
+      This protocol can be used by nested compositors. For instance, a simple
+      full-screen compositor might delegate content to a client. Another
+      example would be a compositor delegating parts of its content to a
+      client, for example drawing a status bar icon might be delegated to a
+      client. The compositor dictates the size of the content.
+
+      Warning! The protocol described in this file is currently in the testing
+      phase. Backward compatible changes may be added together with the
+      corresponding interface version bump. Backward incompatible changes can
+      only be done by creating a new major version of the extension.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the shell object">
+	Destroy the wp_fullscreen_shell_v2 object.
+
+        Other objects are unaffected by this change.
+      </description>
+    </request>
+
+    <request name="get_surface">
+      <description summary="obtain a fullscreen surface">
+        Obtain a fullscreen surface.
+      </description>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+    <enum name="error">
+      <description summary="wl_fullscreen_shell error values">
+	These errors can be emitted in response to invalid requests.
+      </description>
+      <entry name="role" value="1" summary="surface has another role"/>
+    </enum>
+  </interface>
+
+  <interface name="wp_fullscreen_surface_v2" version="1">
+    <description summary="fullscreen surface">
+      This object represents a full-screen surface.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the fullscreen surface object">
+	Destroy the wp_fullscreen_surface_v2 object.
+      </description>
+    </request>
+
+    <event name="configure">
+      <arg name="serial" type="uint"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </event>
+
+    <request name="ack_configure">
+      <arg name="serial" type="uint"/>
+    </request>
+  </interface>
+</protocol>
