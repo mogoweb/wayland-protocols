@@ -2,6 +2,7 @@
 <protocol name="xdg_decoration_unstable_v1">
   <copyright>
     Copyright © 2018 Simon Ser
+    Copyright © 2024 Emma MB
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -23,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zxdg_decoration_manager_v1" version="1">
+  <interface name="zxdg_decoration_manager_v1" version="2">
     <description summary="window decoration manager">
       This interface allows a compositor to announce support for server-side
       decorations.
@@ -71,7 +72,7 @@
     </request>
   </interface>
 
-  <interface name="zxdg_toplevel_decoration_v1" version="1">
+  <interface name="zxdg_toplevel_decoration_v1" version="2">
     <description summary="decoration object for a toplevel surface">
       The decoration object allows the compositor to toggle server-side window
       decorations for a toplevel surface. The client can request to switch to
@@ -89,6 +90,8 @@
       <entry name="orphaned" value="2"
         summary="xdg_toplevel destroyed before the decoration object"/>
       <entry name="invalid_mode" value="3" summary="invalid mode"/>
+      <entry name="invalid_edge" value="4" summary="invalid edge"/>
+      <entry name="invalid_position" value="5" summary="invalid position"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -106,6 +109,8 @@
         summary="no server-side window decoration"/>
       <entry name="server_side" value="2"
         summary="server-side window decoration"/>
+      <entry name="notch_server_side" value="3"
+        summary="notched server-side window decoration"/>
     </enum>
 
     <request name="set_mode">
@@ -119,8 +124,9 @@
         server-side decorations. The client must also acknowledge the configure
         when committing the new content (see xdg_surface.ack_configure).
 
-        The compositor can decide not to use the client's mode and enforce a
-        different mode instead.
+        The compositor may decide not to use the client's mode and enforce a
+        different mode instead. Compositors must not use notch_server_side
+        unless the client has requested it.
 
         Clients whose decoration mode depend on the xdg_toplevel state may send
         a set_mode request in response to an xdg_surface.configure event and wait
@@ -144,6 +150,49 @@
       </description>
     </request>
 
+    <enum name="edge">
+      <description summary="window edges">
+        These values describe the edge of a window.
+      </description>
+      <entry name="top" value="1"/>
+      <entry name="bottom" value="2"/>
+      <entry name="left" value="3"/>
+      <entry name="right" value="4"/>
+    </enum>
+
+    <request name="notch_set_padding">
+      <description summary="set prefered padding">
+        Set the decoration prefered size. This informs the compositor that
+        the client prefers the provided size of decorations on the provided edge
+        of the window.
+
+        If the client does not wish to visually integrate with the decorations on
+        a particular edge of the window, it may set the size to 0. If the padding
+        on a particular edge is set to 0, the compositor should not overlay 
+        decorations that are intended to integrate with that edge of the window.
+
+        The compositor may decide to not use the clients prefered decoration
+        size and use a different size instead.
+
+        Clients must only send this request in notch_server_side mode.
+
+        If an invalid edge is provided by the client, the invalid_edge protocol
+        error is raised by the compositor.
+      </description>
+      <arg name="edge" type="uint" enum="edge" summary="the edge of the window"/>
+      <arg name="size" type="uint" summary="size of the prefered padding"/>
+    </request>
+
+    <request name="notch_unset_padding">
+      <description summary="unset prefered padding">
+        Unset the prefered padding. This informs the compositor that the client
+        doesn't have a prefered padding size on the provided edge of the window.
+
+        This request has the same semantics as notch_set_padding
+      </description>
+      <arg name="edge" type="uint" enum="edge" summary="the edge of the window"/>
+    </request>
+
     <event name="configure">
       <description summary="notify a decoration mode change">
         The configure event configures the effective decoration mode. The
@@ -155,6 +204,46 @@
         obeyed by the client.
       </description>
       <arg name="mode" type="uint" enum="mode" summary="the decoration mode"/>
+    </event>
+
+    <enum name="position">
+      <description>
+        These values describe the corners and edges of a window.
+      </description>
+      <entry name="top_left" value="1"/>
+      <entry name="top_center" value="2"/>
+      <entry name="top_right" value="3"/>
+      <entry name="middle_left" value="4"/>
+      <entry name="middle_right" value="5"/>
+      <entry name="bottom_left" value="6"/>
+      <entry name="bottom_center" value="7"/>
+      <entry name="bottom_right" value="8"/>
+    </enum>
+
+
+    <event name="configure_decoration">
+      <description summary="notify a decoration configuration change">
+        The configure decoration event configures the size and position of
+        notched server size decorations. The configured state should
+        not be applied immediately. Clients must send an ack_configure in
+        response to this event. See xdg_surface.configure and
+        xdg_surface.ack_configure for details.
+
+        A configure decoration event can be sent at any time while in
+        notch_server_side mode. 
+
+        Clients should create visually empty space in the area of a notched
+        decoration. Clients should treat the values as already having all the
+        visual padding needed for the decorations to appear centered.
+        
+        Compositors may use more than 1 position for decorations. Compositors
+        may remove decorations by setting the width and height to 0.
+        Compositors must not include a decoration if the decoration will not be
+        overlayed onto the client.
+      </description>
+      <arg name="position" type="uint" enum="position" summary="position of the decoration"/>
+      <arg name="width" type="uint" summary="width of the decoration"/>
+      <arg name="height" type="uint" summary="height of the decoration"/>
     </event>
   </interface>
 </protocol>
