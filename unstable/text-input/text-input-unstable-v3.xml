@@ -210,6 +210,7 @@
       <entry name="sensitive_data" value="0x80" summary="typed text should not be stored"/>
       <entry name="latin" value="0x100" summary="just Latin characters should be entered"/>
       <entry name="multiline" value="0x200" summary="the text input is multiline"/>
+      <entry name="no_emoji" value="0x400" summary="prefer not offering emoji support"/>
     </enum>
 
     <enum name="content_purpose">
