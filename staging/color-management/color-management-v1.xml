@@ -1135,9 +1135,8 @@
     <request name="set_luminances">
       <description summary="primary color volume luminance range and reference white">
         Sets the primary color volume luminance range and the reference white
-        luminance level. These values include the minimum display emission
-        and ambient flare luminances, assumed to be optically additive and have
-        the chromaticity of the primary color volume white point.
+        luminance level. These values include the minimum display emission, but
+        not external flare.
 
         The default luminances from
         https://www.color.org/chardata/rgb/srgb.xalter are
