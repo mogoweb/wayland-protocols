@@ -42,6 +42,26 @@
 
     For toplevel surfaces, the size is rounded halfway away from zero. The
     rounding algorithm for subsurface position and size is not defined.
+
+    Implementers should take care to exactly compute the rounded sizes;
+    computing the rounded size naively using floating point arithmetic may
+    introduce small errors which can affect the direction of rounding.
+
+    If `s` is the value of the numerator sent through the preferred_scale
+    event, and `(w,h)` gives the surface size, then the buffer size `(W,H)`
+    can be computed exactly using the following integer formulas:
+    `W = (w*s + 60) / 120`; `H = (h*s + 60) / 120`.
+
+    For example, with `s = 126`, `w = 11`, and `h = 30`,
+    ```
+    W = (126*11 + 60) / 120 = 1446 / 120 = 12
+    H = (126*30 + 60) / 120 = 3840 / 120 = 32
+    ```
+    The following approach to compute `H` using 32-bit floating point numbers
+    can give the wrong answer.
+    ```
+    H = round(30.0 * (126.0 / 120.0)) = round(31.499998) = 31
+    ```
   </description>
 
   <interface name="wp_fractional_scale_manager_v1" version="1">
