@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="ext_audio_surface_v1">
+
+  <copyright>
+    Copyright © 2024 Julian Orth
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <interface name="ext_audio_surface_manager_v1" version="1">
+    <description summary="indicate surfaces playing audio">
+      This interface allows clients to inform the compositor which of their
+      surfaces are playing audio. The compositor can use this information to
+      show corresponding indicators in its UI.
+
+      Warning! The protocol described in this file is currently in the testing
+      phase. Backward compatible changes may be added together with the
+      corresponding interface version bump. Backward incompatible changes can
+      only be done by creating a new major version of the extension.
+    </description>
+
+    <enum name="error">
+      <description summary="ext_audio_surface_manager_v1 error values">
+	These errors can be emitted in response to ext_audio_surface_manager_v1
+	requests.
+      </description>
+      <entry name="audio_surface_exists" value="1"
+	     summary="the wl_surface already has an extension object"/>
+    </enum>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager object">
+	Destroy the manager object. Objects created by this manager are
+	unaffected.
+      </description>
+    </request>
+
+    <request name="create_surface">
+      <description summary="create a new audio surface">
+	Create an extension object for a wl_surface to control its audio
+	state. If the wl_surface already has an ext_audio_surface_v1, the
+	audio_surface_exists protocol error is raised.
+      </description>
+      <arg name="id" type="new_id" interface="ext_audio_surface_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"
+	   summary="the surface to extend"/>
+    </request>
+
+  </interface>
+
+  <interface name="ext_audio_surface_v1" version="1">
+    <description summary="surface extension object to control the audio state">
+      This interface allows the client to inform the compositor when a surface
+      is playing audio.
+
+      Each surface is in one of two possible states: started or stopped. By
+      default, each surface is in the stopped state, indicating that it is not
+      playing audio. The client must make the started request to transition to
+      the started state.
+
+      If the surface is destroyed before this object, this object becomes inert.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the extension object">
+	Remove the extension object from the wl_surface.
+
+	The surface is automatically reverted to the stopped state. If the
+	client wants to synchronize this with a wl_surface.commit, it should
+	make a stopped request and commit the surface before destroying this
+	object.
+      </description>
+    </request>
+
+    <request name="started">
+      <description summary="the surface has started playing audio">
+	Transition the surface to the started state, indicating that it has
+	started playing audio.
+
+	It is not an error to make this request when the surface is already in
+	the started state.
+
+	The audio state is double-buffered, see wl_surface.commit for details.
+      </description>
+    </request>
+
+    <request name="stopped">
+      <description summary="the surface has stopped playing audio">
+	Transition the surface to the stopped state, indicating that it has
+	stopped playing audio.
+
+	It is not an error to make this request when the surface is already in
+	the stopped state.
+
+	The audio state is double-buffered, see wl_surface.commit for details.
+      </description>
+    </request>
+  </interface>
+</protocol>
