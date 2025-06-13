@@ -936,7 +936,7 @@
 	</description>
       </entry>
       <entry name="constrained_bottom" value="13" since="7">
-	<description summary="the surface’s bottom edge is tiled">
+	<description summary="the surface’s bottom edge is constrained">
           The bottom edge of the window is currently constrained, meaning it
           shouldn't attempt to resize from that edge. It can for example mean
           it's tiled next to a monitor edge on the constrained side of the
