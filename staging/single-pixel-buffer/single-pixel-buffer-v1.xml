@@ -36,7 +36,7 @@
     only be done by creating a new major version of the extension.
   </description>
 
-  <interface name="wp_single_pixel_buffer_manager_v1" version="1">
+  <interface name="wp_single_pixel_buffer_manager_v1" version="2">
     <description summary="global factory for single-pixel buffers">
       The wp_single_pixel_buffer_manager_v1 interface is a factory for
       single-pixel buffers.
@@ -65,6 +65,20 @@
         These arguments should be interpreted as a percentage, i.e.
         - UINT32_MIN = 0% of the given color component
         - UINT32_MAX = 100% of the given color component
+      </description>
+      <arg name="id" type="new_id" interface="wl_buffer"/>
+      <arg name="r" type="uint" summary="value of the buffer's red channel"/>
+      <arg name="g" type="uint" summary="value of the buffer's green channel"/>
+      <arg name="b" type="uint" summary="value of the buffer's blue channel"/>
+      <arg name="a" type="uint" summary="value of the buffer's alpha channel"/>
+    </request>
+
+    <request name="create_f32_rgba_buffer" since="2">
+      <description summary="create a 1×1 buffer from 32-bit IEEE 754 values">
+        The compositor interprets each value as the binary representation of a
+        IEEE 754 binary32 (also known as float, also known as f32) number.
+
+        The width and height of the buffer are 1.
       </description>
       <arg name="id" type="new_id" interface="wl_buffer"/>
       <arg name="r" type="uint" summary="value of the buffer's red channel"/>
