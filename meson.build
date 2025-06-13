@@ -59,6 +59,7 @@ staging_protocols = {
 	'ext-image-capture-source': ['v1'],
 	'ext-image-copy-capture': ['v1'],
 	'ext-session-lock': ['v1'],
+	'ext-toplevel-placement': ['v1'],
 	'ext-transient-seat': ['v1'],
 	'ext-workspace': ['v1'],
 	'fifo': ['v1'],
