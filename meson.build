@@ -63,6 +63,7 @@ staging_protocols = {
 	'ext-workspace': ['v1'],
 	'fifo': ['v1'],
 	'fractional-scale': ['v1'],
+	'gamepad': ['v1'],
 	'linux-drm-syncobj': ['v1'],
 	'pointer-warp': ['v1'],
 	'security-context': ['v1'],
