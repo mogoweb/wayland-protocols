@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="xdg_decoration_v2">
+  <copyright>
+    Copyright © 2018 Simon Ser
+    Copyright © 2024 Julian Orth
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="Protocol for toplevel decoration negotiation">
+    This protocol allows compositors and clients to inform each other of their
+    capabilities, preferences, and intent to draw decorations.
+
+    This protocol imposes no requirements on compositors or clients. Both
+    parties are permitted to draw decorations at the same time. Both parties
+    are permitted to draw no decorations at the same time.
+
+    If a client uses this protocol but never announces a configuration, the
+    compositor must behave as if the client had not used this protocol.
+
+    Warning! The protocol described in this file is experimental and
+    backward incompatible changes may be made. Backward compatible changes
+    may be added together with the corresponding interface version bump.
+    Backward incompatible changes are done by bumping the version number in
+    the protocol and interface names and resetting the interface version.
+    Once the protocol is to be declared stable, the 'z' prefix and the
+    version number in the protocol and interface names are removed and the
+    interface version number is reset.
+  </description>
+
+  <interface name="xdg_decoration_manager_v2" version="1">
+    <description summary="decoration manager">
+      This global allows clients to retrieve the compositor's default SSD
+      configuration and to create per-toplevel decoration objects.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroys the object">
+        This has no effect on other objects created by this object.
+      </description>
+    </request>
+
+    <request name="get_default_toplevel_ssd_configuration">
+      <description summary="gets the default SSD configuration">
+        The client can make this request to get the default SSD configuration of
+        the compositor. This is useful if the clients wants to execute logic
+        that depends on the compositor's capabilities and preferences before
+        creating any toplevels.
+
+        The draws_ssd event has no effect for the new object and the commit
+        event will not be part of an xdg_surface.configure sequence.
+      </description>
+      <arg name="id" type="new_id"
+           interface="xdg_toplevel_ssd_configuration_v2"/>
+    </request>
+
+    <request name="get_toplevel_decoration">
+      <description summary="creates a new toplevel decoration object">
+        Only a single decoration object can exist for an xdg_toplevel at a time.
+        If the client tries to create a second decoration object before
+        destroying the first one, the already_constructed error will be raised.
+      </description>
+      <arg name="id" type="new_id" interface="xdg_toplevel_decoration_v2"/>
+      <arg name="toplevel" type="object" interface="xdg_toplevel"/>
+    </request>
+
+    <event name="default_toplevel_ssd_configuration_changed">
+      <description
+        summary="the compositor's default SSD configuration has changed">
+        In response to this event, the client might want to make a
+        get_default_toplevel_ssd_configuration request to update the default
+        configuration.
+      </description>
+    </event>
+  </interface>
+
+  <interface name="xdg_toplevel_decoration_v2" version="1">
+    <description summary="decoration object for a toplevel surface">
+      This protocol allows compositors and clients to inform each other of their
+      capabilities, preferences, and intent to draw decorations.
+
+      After this object has been created, the compositor will immediately emit
+      a configure_ssd event. The compositor can emit this event at any time to
+      announce a change of its configuration.
+
+      The client can announce its CSD configuration at any time by making a
+      configure_csd request.
+
+      The client may destroy the underlying toplevel before destroying this
+      object. The behavior is as if the client had made the stop request on
+      this object.
+    </description>
+
+    <enum name="error">
+      <entry name="already_constructed" value="0"
+        summary="xdg_toplevel already has a decoration object"/>
+    </enum>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroys the object">
+        The client should first make a stop request before destroying this
+        object to avoid races with configure_ssd events.
+
+        This has no effect on the client's CSD configuration. If the client
+        wants to reset its CSD configuration, it should explicitly make a
+        configure_csd request first.
+
+        This has no effect on existing xdg_toplevel_csd_configuration_v2
+        objects.
+      </description>
+    </request>
+
+    <request name="stop">
+      <description
+        summary="asks the compositor to stop emitting configure_ssd events">
+        The compositor will reply with a done event and will no longer emit
+        configure_ssd events afterwards.
+      </description>
+    </request>
+
+    <request name="configure_csd">
+      <description
+        summary="notify the server of the client's CSD configuration">
+        The client should avoid making this request unless its configuration
+        changes.
+      </description>
+      <arg name="id" type="new_id"
+           interface="xdg_toplevel_csd_configuration_v2"/>
+    </request>
+
+    <event name="done">
+      <description
+        summary="the compositor will no longer emit configure_ssd events">
+        The client should destroy this object after receiving this event.
+      </description>
+    </event>
+
+    <event name="configure_ssd">
+      <description
+        summary="notify the client of the server's SSD configuration">
+        The server should avoid sending this event unless its configuration
+        changes.
+      </description>
+      <arg name="id" type="new_id"
+           interface="xdg_toplevel_ssd_configuration_v2"/>
+    </event>
+  </interface>
+
+  <interface name="xdg_toplevel_csd_configuration_v2" version="1">
+    <description>
+      This object allows the client to inform the compositor about its
+      client-side decorations (CSD) support and preferences.
+
+      The configuration consists of the following state:
+
+      1. Whether the client supports drawing CSD (default = false)
+      2. Whether the client supports not drawing CSD (default = false)
+      3. Whether the client prefers drawing CSD (default = no preference)
+
+      The client can modify this state with the provided requests and then
+      commit it. If the client does not modify parts of the state, those parts
+      will be set to the defaults mentioned above.
+
+      If the client announces no support for drawing CSD, then the compositor
+      should assume that no CSD will be drawn in any case unless the client
+      explicitly changes its configuration.
+
+      If the client announce no support for not drawing CSD, then the compositor
+      should assume that CSD will always be drawn in any case unless the client
+      explicitly changes its configuration.
+    </description>
+
+    <request name="supports_drawing_csd">
+      <description summary="announces that the client supports drawing CSD"/>
+    </request>
+
+    <request name="supports_not_drawing_csd">
+      <description
+        summary="announces that the client supports not drawing CSD"/>
+    </request>
+
+    <request name="prefers_drawing_csd">
+      <description summary="announces that the client prefers drawing CSD"/>
+    </request>
+
+    <request name="prefers_not_drawing_csd">
+      <description summary="announces that the client prefers not drawing CSD"/>
+    </request>
+
+    <request name="commit" type="destructor">
+      <description summary="commits the configuration">
+        The compositor will use the new xdg_toplevel_ssd_configuration_v2 object
+        to announce its own configuration.
+      </description>
+      <arg name="id" type="new_id"
+           interface="xdg_toplevel_ssd_configuration_v2"/>
+    </request>
+  </interface>
+
+  <interface name="xdg_toplevel_ssd_configuration_v2" version="1">
+    <description>
+      This object allows the compositor to inform the client about its
+      server-side decorations (SSD) support, preferences, and intent.
+
+      The configuration consists of the following state:
+
+      1. Whether the compositor supports drawing SSD (default = false)
+      2. Whether the compositor supports not drawing SSD (default = false)
+      3. Whether the compositor prefers drawing SSD (default = no preference)
+      4. Whether the compositor intents to draw SSD (default = false)
+
+      The compositor can modify this state with the provided events and then
+      commit it. If the compositor does not modify parts of the state, those
+      parts will be set to the defaults mentioned above.
+
+      If the compositor announce no support for drawing SSD, then the client
+      should assume that no SSD will be drawn in any case unless the compositor
+      explicitly changes its configuration.
+
+      If the compositor announce no support for not drawing SSD, then the client
+      should assume that SSD will always be drawn in any case unless the
+      compositor explicitly changes its configuration.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroys this object"/>
+    </request>
+
+    <event name="supports_drawing_ssd">
+      <description
+        summary="announces that the compositor supports drawing SSD"/>
+    </event>
+
+    <event name="supports_not_drawing_ssd">
+      <description
+        summary="announces that the compositor supports not drawing SSD"/>
+    </event>
+
+    <event name="prefers_drawing_ssd">
+      <description summary="announces that the compositor prefers drawing SSD"/>
+    </event>
+
+    <event name="prefers_not_drawing_ssd">
+      <description
+        summary="announces that the compositor prefers not drawing SSD"/>
+    </event>
+
+    <event name="draws_ssd">
+      <description summary="announces that the compositor intents to draw SSD"/>
+    </event>
+
+    <event name="commit">
+      <description summary="commits the configuration">
+        This event is part of an xdg_surface.configure sequence. The intent to
+        draw SSD will take affect when the client acknowledges the new
+        configuration and commits its new state.
+
+        The client should destroy this object after receiving this event.
+      </description>
+    </event>
+  </interface>
+</protocol>
