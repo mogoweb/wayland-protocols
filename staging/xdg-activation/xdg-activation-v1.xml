@@ -66,7 +66,7 @@
     only be done by creating a new major version of the extension.
   </description>
 
-  <interface name="xdg_activation_v1" version="1">
+  <interface name="xdg_activation_v1" version="2">
     <description summary="interface for activating surfaces">
       A global interface used for informing the compositor about applications
       being activated or started, or for applications to request to be
@@ -110,9 +110,14 @@
       <arg name="surface" type="object" interface="wl_surface"
 	   summary="the wl_surface to activate"/>
     </request>
+
+    <request name="get_window_hint" since="2">
+      <description summary="creates a xdg_activation_window_hint object"/>
+      <arg name="id" type="new_id" interface="xdg_activation_window_hint"/>
+    </request>
   </interface>
 
-  <interface name="xdg_activation_token_v1" version="1">
+  <interface name="xdg_activation_token_v1" version="2">
     <description summary="an exported activation handle">
       An object for setting up a token and receiving a token handle that can
       be passed as an activation token to another client.
@@ -196,5 +201,68 @@
         longer be used. The received token stays valid.
       </description>
     </request>
+  </interface>
+
+  <interface name="xdg_activation_window_hint" version="2">
+    <description summary="an interface for selecting activation candidates">
+      Some clients allow having multiple documents in a single window, while
+      also allowing multiple windows at the same time. When such a client
+      is asked to open a new document by another application, it needs to
+      choose a window to open it in, but it doesn't have enough contextual
+      information to do that well in all cases. It can for example not know if
+      a window is currently on an inactive virtual desktop.
+
+      This interface allows the client to make the compositor choose a window
+      to open a new document in. To do this, the client must provide the
+      possible choices with add_window_candidate_surface and
+      add_window_candidate_handle, optionally provide an activation token, and
+      afterwards commit.
+    </description>
+
+    <request name="set_activation_token" since="2">
+      <description summary="set the activation token">
+        If the application sets an activation token, the compositor might use
+        it to improve its choice, for example by ensuring the chosen candidate
+        is on the same virtual desktop as the surface requesting the activation.
+      </description>
+      <arg name="token" type="string"/>
+    </request>
+
+    <request name="add_window_candidate_handle" since="2">
+      <description summary="add a candidate">
+        Adds a candidate in the form of a window handle exported with
+        xdg_foreign_unstable_v2.
+      </description>
+      <arg name="window_handle" type="string"/>
+    </request>
+
+    <request name="commit" since="2">
+      <description summary="ask the compositor to make a choice">
+        When the compositor processes this request, it must immediately
+        either send chosen_candidate or new_candidate_preferred, and afterwards
+        destroy this object.
+      </description>
+    </request>
+
+    <event name="chosen_candidate" type="destructor" since="2">
+      <description summary="activate an existing window">
+        The compositor sends this event if the client should use an existing
+        window.
+      </description>
+      <arg name="chosen_handle" type="string"/>
+    </event>
+
+    <event name="new_candidate_preferred" type="destructor" since="2">
+      <description summary="create a new window instead">
+        The compositor sends this event if it deems none of the candidates a
+        suitable choice for the client. Instead, the client should create a
+        new window to open the document in.
+
+        In order to allow multi-window multi-instance applications to choose
+        which instance should create the new window, the compositor may send
+        a handle of its next best choice for window activation.
+      </description>
+      <arg name="next_best_choice" type="string"/>
+    </event>
   </interface>
 </protocol>
