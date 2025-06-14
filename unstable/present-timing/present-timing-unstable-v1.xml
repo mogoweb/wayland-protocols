@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="zwp_present_timing_unstable_v1">
+
+  <copyright>
+    Copyright © 2020 Collabora, Ltd.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <interface name="zwp_present_timing_v1" version="1">
+    <description summary="timed presentation related wl_surface requests">
+      This protocol extension allows an application to obtain per-surface
+      presentation properties (e.g. the refresh period), get timing
+      information about each present, and to schedule a present to happen
+      no earlier than a desired time. An application can use this to
+      minimize various visual anomalies (e.g. stuttering).
+
+      This protocol extension is modeled after the VK_EXT_present_timing
+      extension.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="">
+        Informs the server that the client will no longer be using
+        this protocol object. Existing objects created by this object
+        are not affected.
+      </description>
+    </request>
+
+    <request name="get_surface_present_timing">
+      <description summary="">
+        Requests a new zwp_surface_present_timing_v1 object for the given
+        surface.
+
+        If the associated wl_surface object becomes invalid, the
+        zwp_surface_present_timing_v1 becomes inert and the client should
+        destroy it by calling zwp_surface_present_timing.destroy.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_surface_present_timing_v1"
+           summary="new surface present timing object"/>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="target surface"/>
+    </request>
+
+    <event name="clock_id">
+      <description summary="clock ID for timestamps">
+        This event tells the client in which clock domain the
+        compositor interprets the timestamps used by the presentation
+        extension. This clock is called the presentation clock.
+
+        The compositor sends this event when the client binds to the
+        present_timing interface. The presentation clock does not change
+        during the lifetime of the client connection.
+
+        The clock identifier is platform dependent. On Linux/glibc,
+        the identifier value is one of the clockid_t values accepted
+        by clock_gettime(). clock_gettime() is defined by
+        POSIX.1-2001.
+
+        Timestamps in this clock domain are expressed as tv_sec_hi,
+        tv_sec_lo, tv_nsec triples, each component being an unsigned
+        32-bit value. Whole seconds are in tv_sec which is a 64-bit
+        value combined from tv_sec_hi and tv_sec_lo, and the
+        additional fractional part in tv_nsec as nanoseconds. Hence,
+        for valid timestamps tv_nsec must be in [0, 999999999].
+
+        Note that clock_id applies only to the presentation clock,
+        and implies nothing about e.g. the timestamps used in the
+        Wayland core protocol input events.
+
+        Compositors should prefer a clock which does not jump and is
+        not slewed e.g. by NTP. The absolute value of the clock is
+        irrelevant. Precision of one millisecond or better is
+        recommended. Clients must be able to query the current clock
+        value directly, not by asking the compositor.
+      </description>
+      <arg name="clk_id" type="uint" summary="platform clock identifier"/>
+    </event>
+
+  </interface>
+
+  <interface name="zwp_surface_present_timing_v1" version="1">
+    <description summary="">
+      An object that allows clients to receive presentation related
+      properties for a surface, set presentation timing parameters
+      for a present, and request timing feedback for a present.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="unbind from the presentation interface">
+        Informs the server that the client will no longer be using
+        this protocol object. Existing objects created by this object
+        are not affected.
+      </description>
+    </request>
+
+    <request name="set_target_present_time">
+      <description summary="">
+        Sets the target present time for the next content submission of
+        the associated wl_surface.
+
+        The target present time is the earliest time point at which the
+        compositor should present the submitted contents. For best results
+        on fixed rate displays this should be set to T + n*R, where T is the
+        previous content presentation time for this surface, and n*R is an
+        integer multiple of the refresh period (see
+        zwp_surface_present_timing_v1.timing_properties).
+
+        Note that if a present_slop value has been set, the compositor
+        may choose to present earlier than target present time if some
+        conditions are met (see zwp_surface_present_timing_v1.set_present_slop
+        for details).
+
+        If the target present time is zero or has not been set, this
+        extension does not affect the compositor's timings on presenting
+        the content submission.
+
+        The target present time is interpreted according to the active clock
+        domain (see zwp_present_timing_v1.clock_id).
+
+        The target present time is double-buffered state, and will be applied
+        on the next wl_surface.commit request for the associated surface.
+      </description>
+      <arg name="tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the timestamp"/>
+      <arg name="tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the timestamp"/>
+      <arg name="tv_nsec" type="uint"
+           summary="nanoseconds part of the timestamp"/>
+    </request>
+
+    <request name="set_ideal_present_time">
+      <description summary="">
+        Sets the ideal present time for the next content submission of
+        the associated wl_surface.
+
+        The ideal present time provides an indication to the compositor
+        of what the client desires its presentation duration to become.
+        An application the ideal present time to the same value as
+        target present time, indicating that the client desires its
+        presentation duration to remain steady. A value earlier than
+        the target present time that the client desires to shorten its
+        presentation duration. A value later than the target present time
+        indicates that the application desires to lengthen its presentation
+        duration.
+
+        The compositor will provide feedback on this value in the data returned
+        in zwp_present_time_feedback_v1. The client can use this information to
+        adapt future target present times.
+
+        An unset ideal present time, or a value of zero, indicates no particular
+        preference about what the clients desires in terms of presentation rate.
+
+        Setting the ideal present time to timepoint zero, indicates to the
+        compositor that no evaluation is needed.
+
+        The ideal present time is double-buffered state, and will be applied
+        on the next wl_surface.commit request for the associated surface.
+      </description>
+      <arg name="tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the timestamp"/>
+      <arg name="tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the timestamp"/>
+      <arg name="tv_nsec" type="uint"
+           summary="nanoseconds part of the timestamp"/>
+    </request>
+
+    <request name="set_present_slop">
+      <description summary="">
+        Sets the duration of a time period before the target present time,
+        in which the compositor may choose to present the submitted contents
+        if it overlaps with the vsync period on fixed refresh rate displays.
+
+        This is used to avoid unintentionally missing a vertical blanking
+        period on FRR displays due to rounding errors or drift between
+        clocks.
+
+        The present slop is interpreted according to the active clock
+        domain (see zwp_present_timing_v1.clock_id).
+
+        The present slop is double-buffered state, and will be applied
+        on the next wl_surface.commit request for the associated surface.
+      </description>
+      <arg name="tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the timestamp"/>
+      <arg name="tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the timestamp"/>
+      <arg name="tv_nsec" type="uint"
+           summary="nanoseconds part of the timestamp"/>
+    </request>
+
+    <enum name="refresh_type">
+      <description summary="">
+      <entry name="fixed" value="0"
+             summary="fixed refresh rate"/>
+      <entry name="variable" value="1"
+             summary="variable refresh rate"/>
+    </enum>
+
+    <event name="timing_properties">
+      <description summary="">
+        The refresh period is an indication of the duration of a present/refresh
+        cycle as it applies for the associated surface. The period is interpreted
+        according to the active clock domain (see zwp_present_timing_v1.clock_id).
+
+        If presentation occurs at a fixed rate, this is the interval from the start
+        of one refresh cycle to the start of the next refresh cycle.
+
+        If presentation may occur at a variable rate (i.e. refresh cycles may
+        have variable length), this is the minimum interval from the
+        start of one refresh cycle to the start of the next refresh cycle.
+
+        The refresh_type argument indicates whether presentation occurs in a
+        fixed or variable rate.
+
+        This event is emitted once the compositor has enough information to evaluate
+        the refresh period and refresh type, and whenever these properties change.
+      </description>
+      <arg name="refresh_tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the refresh period"/>
+      <arg name="refresh_tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the refresh period"/>
+      <arg name="refresh_tv_nsec" type="uint"
+           summary="nanoseconds part of the refresh period"/>
+      <arg name="refresh_type" type="uint" enum="refresh_type"
+           summary="the refresh type"/>
+    </event>
+
+    <request name="feedback">
+      <description summary="request presentation feedback information">
+        Request presentation feedback for the next content submission
+        on the given surface. This creates a new presentation_feedback
+        object, which will deliver the feedback information once. If
+        multiple presentation_feedback objects are created for the same
+        submission, they will all deliver the same information.
+
+        For details on what information is returned, see the
+        zwp_present_timing_feedback_v1 interface.
+      </description>
+      <arg name="callback" type="new_id" interface="zwp_present_timing_feedback_v1"
+           summary="new feedback object"/>
+    </request>
+
+  </interface>
+
+  <interface name="zwp_present_timing_feedback_v1" version="1">
+    <description summary="presentation time feedback event">
+      Timing information about a present.
+    </description>
+
+    <event name="presented">
+      <description summary="the content update was displayed">
+        The associated content update was displayed to the user at the
+        indicated actual time (actual_tv_sec_hi/lo, actual_tv_nsec).
+
+        The actual timestamp corresponds to the time when the content update
+        turned into light the first time on the surface's main output.
+        Compositors may approximate this from the framebuffer flip completion
+        events from the system, and the latency of the physical display path
+        if known.
+
+        The optimal timestamp indicates the time when the compositor would
+        have liked the client to set the target present time to. This allows
+        the compositor to provide feedback to the provided ideal present time.
+        The compositor may set this to the actual present time, to the ideal
+        present time (see zwp_surface_present_timing_v1.set_ideal_present_time),
+        or to some other time based upon how the client is performing, the system
+        load and/or future clock settings.
+
+        All timestamps are interpreted according to the active clock
+        domain (see zwp_present_timing_v1.clock_id).
+      </description>
+
+      <arg name="actual_tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the actual presentation timestamp"/>
+      <arg name="actual_tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the actual presentation timestamp"/>
+      <arg name="actual_tv_nsec" type="uint"
+           summary="nanoseconds part of the actual presentation timestamp"/>
+
+      <arg name="optimal_tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the optimal presentation timestamp"/>
+      <arg name="optimal_tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the optimal presentation timestamp"/>
+      <arg name="optimal_tv_nsec" type="uint"
+           summary="nanoseconds part of the optimal presentation timestamp"/>
+    </event>
+
+    <event name="discarded">
+      <description summary="the content update was not displayed">
+        The content update was never displayed to the user.
+      </description>
+    </event>
+  </interface>
+
+</protocol>
