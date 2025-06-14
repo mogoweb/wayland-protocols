@@ -31,10 +31,9 @@
 <!-- Introduction -->
 
       The main feature of this interface is accurate presentation
-      timing feedback to ensure smooth video playback while maintaining
-      audio/video synchronization. Some features use the concept of a
-      presentation clock, which is defined in the
-      presentation.clock_id event.
+      timing feedback to allow clients to predict future presentation
+      times. Some features use the concept of a presentation clock,
+      which is defined in the presentation.clock_id event.
 
       A content update for a wl_surface is submitted by a
       wl_surface.commit request. Request 'feedback' associates with
@@ -215,20 +214,22 @@
         recommended to choose the output containing the largest part
         of the wl_surface, or keeping the output they previously
         chose. Having a stable presentation output association helps
-        clients predict future output refreshes (vblank).
+        clients predict future presentation timestamps.
 
         The 'refresh' argument gives the compositor's prediction of how
-        many nanoseconds after tv_sec, tv_nsec the very next output
-        refresh may occur. This is to further aid clients in
-        predicting future refreshes, i.e., estimating the timestamps
-        targeting the next few vblanks. If such prediction cannot
-        usefully be done, the argument is zero.
+        many nanoseconds after tv_sec, tv_nsec the surface might be
+        presented the very next time. This is to further aid clients in
+        predicting future refreshes. If such prediction cannot
+        usefully be done, the argument is zero. This value is not
+        necessarily related to the output's refresh rate and clients must
+        not use them interchangeably. For example, the compositor might
+        present the surface at a rate lower than the output's refresh rate.
 
-        For version 2 and later, if the output does not have a constant
+        For version 2 and later, if the surface is not presented with a constant
         refresh rate, explicit video mode switches excluded, then the
         refresh argument must be either an appropriate rate picked by the
         compositor (e.g. fastest rate), or 0 if no such rate exists.
-        For version 1, if the output does not have a constant refresh rate,
+        For version 1, if the surface does not have a constant refresh rate,
         the refresh argument must be zero.
 
         The 64-bit value combined from seq_hi and seq_lo is the value
