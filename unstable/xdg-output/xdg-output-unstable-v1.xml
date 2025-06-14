@@ -54,7 +54,7 @@
     reset.
   </description>
 
-  <interface name="zxdg_output_manager_v1" version="3">
+  <interface name="zxdg_output_manager_v1" version="4">
     <description summary="manage xdg_output objects">
       A global factory interface for xdg_output objects.
     </description>
@@ -77,7 +77,7 @@
     </request>
   </interface>
 
-  <interface name="zxdg_output_v1" version="3">
+  <interface name="zxdg_output_v1" version="4">
     <description summary="compositor logical output region">
       An xdg_output describes part of the compositor geometry.
 
@@ -216,6 +216,18 @@
 	wl_output.description. Compositors must still support this event.
       </description>
       <arg name="description" type="string" summary="output description"/>
+    </event>
+
+    <!-- Version 4 additions -->
+
+    <event name="scale_factor" since="4">
+      <description summary="output scale factor">
+	This event contains output scaling factor information.
+	It may be sent after binding the output object or if the
+	output scale changes later. If it is not sent,
+	the client should rely on the fixed point scale of the wl_output.
+      </description>
+      <arg name="scale_8_24" type="uint" summary="scale factor"/>
     </event>
 
   </interface>
