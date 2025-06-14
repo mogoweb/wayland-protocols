@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="sensitive_content_v1">
+  <copyright>
+    Copyright © 2025 (TBD)
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="protocol to tag areas as sensitive">
+    This protocol allows clients to tag wl_surface(s) or wl_region(s), as
+    sensitive with a specific type. This tag serves as a hint for the compositor
+    to perform actions based on it. Whether the compositor takes action based on
+    the tag is compositor policy. By default, compositors should blur, black
+    out, or otherwise obscure tagged surfaces and regions in screen captures.
+    Additionally, privacy screen features may be toggled based on this tag.
+    Features like these should be overridable by the user.
+
+    This document adheres to RFC 2119 when using words like "must",
+    "should", "may", etc.
+
+    Warning! The protocol described in this file is experimental and may
+    change in future revisions. Backward-compatible changes may be introduced
+    with a version bump. Incompatible changes require a new major version.
+  </description>
+
+  <interface name="wp_sensitive_content_manager_v1" version="1">
+    <description summary="manages surfaces and regions with sensitive content">
+      This interface allows clients to inform the compositor whether they contain
+      sensitive information. Each tagged surface or region can include metadata
+      describing the type of sensitive content.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager object">
+        Destroy the manager object. Objects created by this manager are
+        unaffected.
+      </description>
+    </request>
+
+    <enum name="error">
+      <entry name="already_constructed" value="0"
+             summary="the surface or region already has a sensitive content object"/>
+    </enum>
+
+    <request name="get_surface_sensitive_content">
+      <description summary="create a new surface sensitive content object">
+        Create a new sensitive content object associated with a given surface.
+
+        If a surface already has an wp_sensitive_content_v1 attached, the
+        already_constructed error must be raised.
+      </description>
+      <arg name="id" type="new_id" interface="wp_sensitive_content_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+  </interface>
+
+  <interface name="wp_sensitive_content_v1" version="1">
+    <description summary="tag a surface or a region as sensitive">
+      This interface allows a client to tag a surface or region as sensitive.
+
+      Clients must specify the type of sensitive content (e.g., personal, adult)
+      using an enum.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the extension object">
+        Destroy this extension object. The surface and all regions will no
+        longer be tagged as sensitive and handled as such.
+      </description>
+    </request>
+
+    <enum name="error">
+      <entry name="invalid_region" value="0"
+             summary="specified region is invalid or out of bounds"/>
+    </enum>
+
+    <enum name="type">
+      <description summary="possible sensitive content types">
+        These values specify the type of sensitive content in a tagged surface
+        or region.
+      </description>
+      <entry name="unspecified" value="0">
+        <description summary="no sensitive content type specified">
+          This value indicates that the content of the area is unknown, or
+          unspecified.
+        </description>
+      </entry>
+      <entry name="personal" value="1">
+        <description summary="area contains personal content">
+          This value indicates that the area contains personal information, such
+          as names, addresses, phone numbers, or other personal details.
+        </description>
+      </entry>
+      <entry name="adult" value="2">
+        <description summary="area contains adult content">
+          This value indicates that the area contains adult content, such as
+          violence, sexual content, drugs, gambling, or other adult material.
+        </description>
+      </entry>
+    </enum>
+
+    <request name="set_sensitive_surface">
+      <description summary="tag a surface as sensitive">
+        Tag a surface as sensitive.
+
+        It is not an error to call this request on a surface already tagged as
+        sensitive.
+      </description>
+      <arg name="id" type="new_id" summary="id associated with the surface"/>
+      <arg name="type" type="uint" enum="type"
+           summary="type of sensitive content"/>
+    </request>
+
+    <request name="add_sensitive_region">
+      <description summary="tag a region of a surface as sensitive">
+        Tag a specific region of a surface as sensitive.
+
+        The sensitive region is specified in the surface-local coordinates.
+
+        If the specified region is invalid or out of bounds, the invalid_region
+        error must be raised.
+
+        The initial value for the sensitive region is empty. Setting the pending
+        sensitive region has copy semantics, and the wl_region object can be
+        destroyed immediately. A NULL wl_region causes the sensitive region to
+        be set to infinite.
+
+        It is not an error to call this request on a region already tagged as
+        sensitive.
+      </description>
+      <arg name="id" type="new_id" summary="id associated with the region">
+      <arg name="region" type="object" interface="wl_region" allow-null="false"
+           summary="region of the surface to tag as sensitive"/>
+      <arg name="type" type="uint" enum="type"
+           summary="type of sensitive content"/>
+    </request>
+
+    <request name="set_sensitive_type">
+      <description summary="specify the sensitive type">
+        Specify the sensitive type for the surface. This informs the compositor
+        that the client believes it is displaying content of this type.
+        The client should specify its sensitive type when setting a surface or
+        region as sensitive. This request should be called when the client
+        believes the content of the surface has changed its sensitive type.
+
+        This serves as a hint for the compositor, which can use it to best
+        handle the displayed content.
+
+        The sensitive type is double-buffered state, see wl_surface.commit for
+        details.
+      </description>
+      <arg name="sensitive_type" type="uint" enum="type"
+           summary="the sensitive data type"/>
+    </request>
+  </interface>
+</protocol>
