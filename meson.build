@@ -75,6 +75,7 @@ staging_protocols = {
 	'xdg-toplevel-icon': ['v1'],
 	'xdg-toplevel-tag': ['v1'],
 	'xwayland-shell': ['v1'],
+	'secure-display':['v1'],
 }
 
 experimental_protocols = {

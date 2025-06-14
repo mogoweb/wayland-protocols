@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="secure_display_v1">
+
+  <copyright>
+    Copyright © 2023 Advanced Micro Devices, Inc.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="secure display">
+    This protocol allows compositors to calculate pixel R/G/B channel CRC-16
+    of specified screen region of interest for security check.
+
+    Warning! The protocol described in this file is currently in the testing
+    phase. Backward compatible changes may be added together with the
+    corresponding interface version bump. Backward incompatible changes can
+    only be done by creating a new major version of the extension.
+  </description>
+
+  <interface name="wp_secure_display_manager_v1" version="1">
+    <description summary="manage secure_display objects">
+      A global factory interface for secure_display objects.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the secure_display_manager object">
+        Using this request a client can tell the server that it is not going to use
+        the secure_display_manager object anymore.
+      </description>
+    </request>
+
+    <request name="create_secure_output">
+      <description summary="create a secure display crtc for a given wl_output">
+        Create a secure display crtc interface to handle roi request and crc comparison.
+      </description>
+      <arg name="id" type="new_id" interface="wp_secure_display_crtc_v1"/>
+      <arg name="output" type="object" interface="wl_output"/>
+    </request>
+  </interface>
+
+  <interface name="wp_secure_display_crtc_v1" version="1">
+    <description summary="secure display output crtc">
+      An interface to implement secure display on an assigned crtc. it will send roi request
+      to display driver and read back crc calculated by display controller.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the secure display output">
+      </description>
+    </request>
+
+    <request name="set_roi">
+      <description summary="set display screen region of interest">
+        Clients send request to set screen roi.
+      </description>
+      <arg name="x_start" type="int" summary="start x of roi"/>
+      <arg name="y_start" type="int" summary="start y of roi"/>
+      <arg name="x_end" type="int" summary="end x of roi"/>
+      <arg name="y_end" type="int" summary="end y of roi"/>
+      <arg name="secure_display_enable" type="int" summary="enable secure display check"/>
+    </request>
+
+    <request name="get_crc">
+      <description summary="to read r/g/b crc-16 from drm-backend">
+        Clients send request to read back crc-16 for specified roi.
+      </description>
+    </request>
+
+    <event name="rgb_crc">
+      <description summary="read back from compositors' drm-backend">
+      </description>
+      <arg name="r_crc" type="uint" summary="read back r crc-16 value"/>
+      <arg name="g_crc" type="uint" summary="read back g crc-16 value"/>
+      <arg name="b_crc" type="uint" summary="read back b crc-16 value"/>
+      <arg name="frame_count" type="uint" summary="record frame number to generate crc"/>
+      <arg name="x_start" type="int" summary="read back crc relevant roi"/>
+      <arg name="y_start" type="int" summary="read back crc relevant roi"/>
+      <arg name="x_end" type="int" summary="read back crc relevant roi"/>
+      <arg name="y_end" type="int" summary="read back crc relevant roi"/>
+    </event>
+
+    <event name="crtc_out_fence">
+      <description summary="send crtc out fence to client">
+        out-fence is to synchronize between weston compositor and drm display driver about
+        crc-16 read back.
+      </description>
+      <arg name="out_fence" type="int" summary="out fence for synchronization"/>
+    </event>
+
+    <event name="done">
+      <description summary="crc-16 is read back for security check">
+      </description>
+    </event>
+  </interface>
+</protocol>
