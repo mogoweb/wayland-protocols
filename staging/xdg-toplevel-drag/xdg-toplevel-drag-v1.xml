@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="xdg_toplevel_drag_manager_v1" version="1">
+  <interface name="xdg_toplevel_drag_manager_v1" version="2">
     <description summary="Move a window during a drag">
       This protocol enhances normal drag and drop with the ability to move a
       window at the same time. This allows having detachable parts of a window
@@ -93,7 +93,7 @@
     </request>
   </interface>
 
-  <interface name="xdg_toplevel_drag_v1" version="1">
+  <interface name="xdg_toplevel_drag_v1" version="2">
     <description summary="Object representing a toplevel move during a drag">
     </description>
 
@@ -130,9 +130,26 @@
         This request can be called multiple times but issuing it while a
         toplevel with an active role is attached raises a toplevel_attached
         error.
+
+        Since version 2, the client must commit the toplevel after this request
+        for the window to start moving.
       </description>
 
       <arg name="toplevel" type="object" interface="xdg_toplevel"/>
+      <arg name="x_offset" type="int" summary="dragged surface x offset"/>
+      <arg name="y_offset" type="int" summary="dragged surface y offset"/>
+    </request>
+
+    <!-- Version 2 additions -->
+
+    <request name="set_offset" since="2">
+      <description summary="Change the offset hint">
+        This request sets the offset hint for the currently attached surface.
+        The hint is double-buffered state, see wl_surface.commit for details.
+
+        This request has no effect if no surface is attached.
+      </description>
+
       <arg name="x_offset" type="int" summary="dragged surface x offset"/>
       <arg name="y_offset" type="int" summary="dragged surface y offset"/>
     </request>
