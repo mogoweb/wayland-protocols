@@ -236,6 +236,11 @@
 
         This request must not be sent after capture, or else the
         already_captured protocol error is raised.
+
+        Unless specified otherwise by a protocol extension, the values stored by
+        the compositor in the wl_buffer use pre-multiplied alpha, are
+        pre-multiplied in electrical values, use an implementation-defined color
+        space, and use an implementation-defined transfer function.
       </description>
       <arg name="buffer" type="object" interface="wl_buffer"/>
     </request>
