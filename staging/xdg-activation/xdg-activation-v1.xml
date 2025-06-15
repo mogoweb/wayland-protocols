@@ -179,6 +179,7 @@
       <description summary="issues the token request">
         Requests an activation token based on the different parameters that
         have been offered through set_serial, set_surface and set_app_id.
+        When called xdg_activation_token_v1.done will be sent immediately.
       </description>
     </request>
 
