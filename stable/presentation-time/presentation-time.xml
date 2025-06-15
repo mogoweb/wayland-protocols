@@ -4,6 +4,7 @@
 
   <copyright>
     Copyright © 2013-2014 Collabora, Ltd.
+    Copyright © 2024 Red Hat, Inc.
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -120,6 +121,25 @@
       </description>
       <arg name="clk_id" type="uint" summary="platform clock identifier"/>
     </event>
+
+    <!-- Version 2 additions -->
+
+    <request name="refresh_cycle_info" since="2">
+      <description summary="request refresh cycle information">
+        Request refresh cycle information for the given surface. This
+        creates a new refresh_cycle_info object, which will deliver the
+        refresh cycle information continuously. If multiple refresh
+        cycle objects are created for the same surface, they will all
+        deliver the same information.
+
+        For details on what information is returned, see the
+        refresh_cycle_info interface.
+      </description>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="target surface"/>
+      <arg name="info" type="new_id" interface="wp_refresh_cycle_info"
+           summary="new refresh cycle info object"/>
+    </request>
 
   </interface>
 
@@ -261,6 +281,147 @@
     <event name="discarded" type="destructor">
       <description summary="the content update was not displayed">
         The content update was never displayed to the user.
+      </description>
+    </event>
+
+    <!-- Version 2 additions -->
+
+    <event name="latching_deadline" since="2">
+      <description summary="the latching deadline of this presentation">
+        This event is only sent prior to the presented event.
+
+        Each refresh cycle consists of a number of events, starting with
+        the latching deadline of the previous refresh cycle, the
+        latching deadline of the current cycle, and the presentation.
+
+        The latching deadline indicates the start of a new refresh
+        cycle. The time between two latching deadlines is the duration
+        of the refresh cycle and describes the update frequency.
+
+        If a content update is supposed to be considered for
+        presentation on a certain refresh cycle then the content update
+        must be ready before the latching deadline of the refresh
+        cycle.
+
+        The exact time of the latching deadline is recorded in the
+        timestamp (commit_tv_sec_hi/lo, commit_tv_nsec). For the
+        interpretation of the timestamp, see presentation.clock_id.
+      </description>
+      <arg name="tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the latching deadline timestamp"/>
+      <arg name="tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the latching deadline timestamp"/>
+      <arg name="tv_nsec" type="uint"
+           summary="nanoseconds part of the latching deadline timestamp"/>
+    </event>
+
+  </interface>
+
+  <interface name="wp_refresh_cycle_info" version="2">
+    <description summary="">
+      This sends a sequence of information events which is terminated
+      by the "done" event.
+
+      A sequence of information events is sent when the client binds
+      to the wp_refresh_cycle_info interface and when the refresh cycle
+      information changes.
+    </description>
+
+    <!-- Version 2 additions -->
+
+    <request name="destroy" type="destructor" since="2">
+      <description summary="destroy the refresh cycle info object">
+        Destroy the refresh cycle info object.
+      </description>
+    </request>
+
+    <enum name="state">
+      <description summary="refresh state">
+        Describes if the surface has a refresh cycle and processes
+        content updates.
+      </description>
+      <entry name="none" value="0">
+        <description summary="no refresh cycle">
+          Indicates that the output does not have a concept of vertical
+          retrace or a refresh cycle, or that the output device is
+          self-refreshing without a way to query the refresh count.
+
+          There are no deadline for latching in this state but content
+          updates get processed and might get presented.
+        </description>
+      </entry>
+      <entry name="active" value="1">
+        <description summary="active refresh cycle">
+          Indicates that the surface has an active refresh cycle.
+
+          There are deadlines for latching and content updates get
+          processed and might get presented.
+        </description>
+      </entry>
+      <entry name="suspended" value="2">
+        <description summary="refresh cycles are suspended">
+          Indicates that the surface is hidden or otherwise obstructed.
+
+          There are no deadlines for latching and content updates get
+          ignored.
+        </description>
+      </entry>
+    </enum>
+
+    <event name="state" since="2">
+      <description summary="the refresh cycle state">
+        This event is sent always.
+
+        Describes if the surface has a refresh cycle and expects
+        content updates.
+
+        The compositor sends this event when the client binds to the
+        refresh_cycle interface.
+      </description>
+      <arg name="state" type="uint" enum="state" summary="the refresh state"/>
+    </event>
+
+    <event name="duration" since="2">
+      <description summary="the refresh cycle duration">
+        This event might only be sent in the "active" state.
+
+        If the event is sent, it indicates a stable, constant refresh
+        rate.
+
+        Describes the duration of a refresh cycle in nanoseconds.
+      </description>
+      <arg name="duration" type="uint"
+           summary="the duration of a refresh cycle in nanoseconds"/>
+    </event>
+
+    <event name="presentation" since="2">
+      <description summary="the presentation offset">
+        This event is only sent in the "active" state.
+
+        Describes when the presentation of a refresh cycle happens,
+        relative to the latching deadline in nanoseconds.
+      </description>
+      <arg name="offset" type="uint"
+           summary="the offset of the presentation in nanoseconds"/>
+    </event>
+
+    <event name="discontinuity" since="2">
+      <description summary="indicates discontinuity">
+        This event is sent when there is a discontinuity.
+
+        Previously observed timing information will not correlate with
+        future timing information and should not be used to predict
+        future events.
+
+        A discontinuity typically occurs when the surface changes the
+        output, the mode of the current output changes or the
+        compositor adjusts its internal timing to meet deadlines.
+      </description>
+    </event>
+
+    <event name="done" since="2">
+      <description summary="done">
+        Indicates the end of a sequence.
       </description>
     </event>
   </interface>
