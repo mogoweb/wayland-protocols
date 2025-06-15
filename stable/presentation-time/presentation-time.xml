@@ -4,6 +4,7 @@
 
   <copyright>
     Copyright © 2013-2014 Collabora, Ltd.
+    Copyright © 2023 Red Hat, Inc.
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -120,6 +121,23 @@
       </description>
       <arg name="clk_id" type="uint" summary="platform clock identifier"/>
     </event>
+
+    <request name="refresh_cycle" since="2">
+      <description summary="request refresh cycle information">
+        Request refresh cycle information for the given surface. This
+        creates a new refresh_cycle object, which will deliver the
+        refresh cycle information continuously. If multiple refresh
+        cycle objects are created for the same surface, they will all
+        deliver the same information.
+
+        For details on what information is returned, see the
+        refresh_cycle interface.
+      </description>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="target surface"/>
+      <arg name="refresh_cycle" type="new_id" interface="wp_refresh_cycle"
+           summary="new refresh cycle object"/>
+    </request>
 
   </interface>
 
@@ -262,6 +280,208 @@
       <description summary="the content update was not displayed">
         The content update was never displayed to the user.
       </description>
+    </event>
+  </interface>
+
+  <interface name="wp_refresh_cycle" version="2">
+    <description summary="">
+      <!-- TODO -->
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the refresh cycle object">
+        Destroy the refresh cycle object.
+      </description>
+    </request>
+
+    <enum name="refresh_state">
+      <description summary="refresh state">
+        Describes if the surface has a refresh cycle, sends latching
+        events and processes content updates.
+      </description>
+      <entry name="none" value="0">
+        <description summary="no refresh cycle">
+          Indicates that the output does not have a concept of vertical
+          retrace or a refresh cycle, or that the output device is
+          self-refreshing without a way to query the refresh count.
+
+          No latching events are sent in this state but content updates
+          get processed and might get presented.
+        </description>
+      </entry>
+      <entry name="active" value="1">
+        <description summary="active refresh cycle">
+          Indicates that the surface has an active refresh cycle.
+
+          Latching events are sent and content updates get processed
+          and might get presented.
+        </description>
+      </entry>
+      <entry name="suspended" value="2">
+        <description summary="refresh cycles are suspended">
+          Indicates that the surface is hidden or otherwise obstructed.
+
+          No latching events are sent in this state and content updates
+          get ignored.
+        </description>
+      </entry>
+    </enum>
+
+    <enum name="refresh_kind">
+      <description summary="refresh kind">
+        Describes the refresh cycle kind of a surface.
+      </description>
+      <entry name="regular" value="0">
+        <description summary="regular refresh cycle">
+          The refresh cycle has a relatively constant duration. The
+          duration_min and duration_max arguments are equal and can be
+          used to predict future latching events. ramp_up and ramp_down
+          are zero.
+        </description>
+      </entry>
+      <entry name="erratic" value="1">
+        <description summary="erratic refresh cycle">
+          The refresh cycle duration is erratic. duration_min,
+          duration_max, ramp_up and down are set to zero and can not be
+          used to predict future latching events.
+
+          The refresh cycle is always discontinuous and the
+          discontinuity flag in the latching event is always set.
+        </description>
+      </entry>
+    </enum>
+
+    <event name="state">
+      <description summary="the refresh cycle state">
+        This event describes the refresh cycle of the surface. The
+        information is valid until the next state event and provides
+        context for the latching events sent in between two state
+        events.
+
+        The refresh_state argument describes if the surface has a
+        refresh cycle and expects content updates.
+
+        The latching_kind argument describes the kind of refresh cycle
+        of the surface. This information together with duration_min
+        and duration_max can be used to predict the latching events of
+        future refresh cycles. See the enum description for details of
+        each kind.
+
+        The duration_min and duration_max arguments contain information
+        about the refresh cycle duration. See the enum description for
+        details of each kind.
+
+        The ramp_up and ramp_down arguments describe how much the
+        duration of the refresh cycle can increase and decrease per
+        refresh cycle. The argument is zero if there is no restriction
+        on the increase or decrease per cycle. The refresh cycle can
+        never be decreased below duration_min and can never be
+        increased beyond duration_max.
+
+        The buffer_latching argument describes when the buffer latching
+        of a refresh cycle happens relative to the commit latching. See
+        the latching event for more information.
+
+        The presentation argument describes when the presentation of a
+        refresh cycle happens relative to the commit latching. See the
+        latching event for more information.
+
+        This event indicates a discontinuity and the discontinuity flag
+        of the next latching event is set.
+
+        The compositor sends this event when the client binds to the
+        refresh_cycle interface.
+      </description>
+      <arg name="refresh_state" type="uint" enum="refresh_state"
+           summary="the refresh state"/>
+      <arg name="refresh_kind" type="uint" enum="refresh_kind"
+           summary="the refresh kind"/>
+      <arg name="duration_min" type="uint"
+           summary="the minimum duration of a refresh cycle in nanoseconds"/>
+      <arg name="duration_max" type="uint"
+           summary="the maximum duration of a refresh cycle in nanoseconds"/>
+      <arg name="ramp_up" type="uint"
+           summary="the maximum increase of the duration per refresh cycle in nanoseconds"/>
+      <arg name="ramp_down" type="uint"
+           summary="the maximum decrease of the duration per refresh cycle in nanoseconds"/>
+      <arg name="buffer_latching" type="uint"
+           summary="the time of the buffer latching in nanoseconds after the commit latching"/>
+      <arg name="presentation" type="uint"
+           summary="the time of the presentation in nanoseconds after the commit latching"/>
+    </event>
+
+    <enum name="latching_flags" bitfield="true">
+      <description summary="bitmask of flags in the latching event">
+        These flags provide information about the latching event.
+      </description>
+      <entry name="discontinuity" value="0x1">
+        <description summary="refresh cycle discontinuity">
+          A discontinuity indicates that previously observed latching
+          events will not correlate with future latching events and
+          should not be used to predict future latching events.
+
+          This is typically sent when the surface changes the output, the
+          mode of the current output changes or the compositor adjusts
+          the timing to meet its own deadlines.
+        </description>
+      </entry>
+    </enum>
+
+    <event name="latching">
+      <description summary="latching event">
+        Each refresh cycle consists of a number of events in order: the
+        commit latching of the previous refresh cycle, the commit
+        latching of the current cycle, the buffer latching and the
+        presentation.
+
+        The commit latching indicates the start of a new refresh cycle.
+        Two refresh cycles overlap between the commit latching and the
+        presentation. The buffer latching can be at the same time as
+        the commit latching.
+
+        The time between two commit latching events is the duration of
+        the refresh cycle and describes the update frequency.
+
+        If a content update is supposed to land on a certain refresh
+        cycle then the content update must be committed before the
+        commit latching and the buffers of the content update must be
+        ready before the buffer latching.
+
+        A buffer is considered ready if there are no fences attached to
+        it or if all the explicit and implicit fences attached to it
+        are signaled.
+
+        If a content update landed on a refresh cycle then it is
+        considered for presentation by the compositor on this or any
+        of the following refresh cycles.
+
+        This latching event is sent no earlier than the commit latching
+        but as close to it as possible.
+
+        The exact time of the commit latching is recorded in the
+        timestamp (commit_tv_sec_hi/lo, commit_tv_nsec). For the
+        interpretation of the timestamp, see presentation.clock_id.
+
+        The 64-bit value combined from seq_hi and seq_lo is the value
+        of the output's vertical retrace counter of the refresh cycle's
+        presentation. This value is compatible with seq_hi and seq_lo
+        from presentation_feedback.presented.
+
+        The time of the buffer latching and presentation relative to the
+        commit latching is sent in the state event.
+      </description>
+      <arg name="tv_sec_hi" type="uint"
+           summary="high 32 bits of the seconds part of the commit latching timestamp"/>
+      <arg name="tv_sec_lo" type="uint"
+           summary="low 32 bits of the seconds part of the commit latching timestamp"/>
+      <arg name="tv_nsec" type="uint"
+           summary="nanoseconds part of the commit latching timestamp"/>
+      <arg name="seq_hi" type="uint"
+           summary="high 32 bits of refresh counter"/>
+      <arg name="seq_lo" type="uint"
+           summary="low 32 bits of refresh counter"/>
+      <arg name="flags" type="uint" enum="latching_flags"
+           summary="combination of 'latching_flags' values"/>
     </event>
   </interface>
 
