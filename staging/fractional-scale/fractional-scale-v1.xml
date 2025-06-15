@@ -23,9 +23,9 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <description summary="Protocol for requesting fractional surface scales">
+  <description summary="Protocol for requesting fractional surface and output scales">
     This protocol allows a compositor to suggest for surfaces to render at
-    fractional scales.
+    fractional scales and determine the fractional scale factor of the outputs.
 
     A client can submit scaled content by utilizing wp_viewport. This is done by
     creating a wp_viewport object for the surface and setting the destination
@@ -44,13 +44,13 @@
     rounding algorithm for subsurface position and size is not defined.
   </description>
 
-  <interface name="wp_fractional_scale_manager_v1" version="1">
-    <description summary="fractional surface scale information">
+  <interface name="wp_fractional_scale_manager_v1" version="2">
+    <description summary="fractional surface and output scale information">
       A global interface for requesting surfaces to use fractional scales.
     </description>
 
     <request name="destroy" type="destructor">
-      <description summary="unbind the fractional surface scale interface">
+      <description summary="unbind the fractional surface and output scale interface">
         Informs the server that the client will not be using this protocol
         object anymore. This does not affect any other objects,
         wp_fractional_scale_v1 objects included.
@@ -59,7 +59,7 @@
 
     <enum name="error">
       <entry name="fractional_scale_exists" value="0"
-        summary="the surface already has a fractional_scale object associated"/>
+        summary="the surface or output already has a fractional_scale object associated"/>
     </enum>
 
     <request name="get_fractional_scale">
@@ -74,6 +74,30 @@
       <arg name="surface" type="object" interface="wl_surface"
            summary="the surface"/>
     </request>
+
+    <request name="get_output_fractional_scale" since="2">
+      <description summary="extend output interface for scale information">
+        Create an add-on object for the the wl_output to let the compositor
+        request fractional scales. If the given wl_output already has a
+        wl_client associated with wp_fractional_scale_v1,
+        the fractional_scale_exists protocol error is raised.
+
+        Please keep in mind that this output extension is provided for
+        backward compatibility for projects that have no feasible easy and fast way
+        to transition to per-surface scaling factor.
+        It is intended to provide a lightweight transition path to per-surface scaling.
+        It also aims to satisfy the needs of frameworks/systems
+        that historically expose output scale information,
+        so they need to continue doing that for compatibility.
+
+        However, per-surface scale is the main Wayland way
+        to control scale factors of the client, and it should be preferred to use.
+      </description>
+      <arg name="id" type="new_id" interface="wp_fractional_scale_v1"
+           summary="the new output scale info interface id"/>
+      <arg name="output" type="object" interface="wl_output"
+           summary="the output"/>
+    </request>
   </interface>
 
   <interface name="wp_fractional_scale_v1" version="1">
@@ -83,7 +107,7 @@
     </description>
 
     <request name="destroy" type="destructor">
-      <description summary="remove surface scale information for surface">
+      <description summary="remove fractional scale information for surface or output">
         Destroy the fractional scale object. When this object is destroyed,
         preferred_scale events will no longer be sent.
       </description>
@@ -91,8 +115,8 @@
 
     <event name="preferred_scale">
       <description summary="notify of new preferred scale">
-        Notification of a new preferred scale for this surface that the
-        compositor suggests that the client should use.
+        Notification of a new preferred scale for this surface or output
+        that the compositor suggests that the client should use.
 
         The sent scale is the numerator of a fraction with a denominator of 120.
       </description>
