@@ -565,6 +565,34 @@
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
     </enum>
+
+    <enum name="axis_scroll">
+      <description summary="axis types">
+        Describes the axis types of scroll events.
+      </description>
+      <entry name="vertical_scroll" value="0" summary="vertical axis"/>
+      <entry name="horizontal_scroll" value="1" summary="horizontal axis"/>
+    </enum>
+
+    <event name="axis_scroll">
+      <description summary="axis event">
+        Scroll and other axis notifications.
+
+        For scroll events (vertical and horizontal scroll axes), the
+        value parameter is the length of a vector along the specified
+        axis in a coordinate space identical to those of motion events,
+        representing a relative movement along the specified axis.
+
+        For devices that support movements non-parallel to axes multiple
+        axis events will be emitted.
+
+        When applicable, a client can transform its content relative to the
+        scroll distance.
+      </description>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+      <arg name="axis" type="uint" enum="axis" summary="axis type"/>
+      <arg name="value" type="fixed" summary="length of vector in surface-local coordinate space"/>
+    </event>
   </interface>
 
   <interface name="zwp_tablet_v2" version="2">
