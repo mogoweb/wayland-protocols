@@ -23,7 +23,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zxdg_decoration_manager_v1" version="1">
+  <interface name="zxdg_decoration_manager_v1" version="2">
     <description summary="window decoration manager">
       This interface allows a compositor to announce support for server-side
       decorations.
@@ -71,7 +71,7 @@
     </request>
   </interface>
 
-  <interface name="zxdg_toplevel_decoration_v1" version="1">
+  <interface name="zxdg_toplevel_decoration_v1" version="2">
     <description summary="decoration object for a toplevel surface">
       The decoration object allows the compositor to toggle server-side window
       decorations for a toplevel surface. The client can request to switch to
@@ -106,6 +106,15 @@
         summary="no server-side window decoration"/>
       <entry name="server_side" value="2"
         summary="server-side window decoration"/>
+    </enum>
+
+    <enum name="hints" since="2">
+      <description summary="window decoration hints">
+        These values describe additional window decoration hints.
+      </description>
+      <entry name="titlebar" value="1"
+        summary="The decorations should include a titlebar">
+      </entry>
     </enum>
 
     <request name="set_mode">
@@ -155,6 +164,18 @@
         obeyed by the client.
       </description>
       <arg name="mode" type="uint" enum="mode" summary="the decoration mode"/>
+    </event>
+
+    <event name="csd_hints" since="2">
+      <description summary="notify a client side decoration hint change">
+        The hints event supplies additional information about a decoration mode. The
+        configured state should not be applied immediately. A hints event is always
+        followed by a configure event and should be applied following it's semantics.
+
+        A hints event can be sent at any time. The hints are purely informational
+        and can be ignored by the client.
+      </description>
+      <arg name="hints" type="uint" enum="hints" summary="the decoration hints"/>
     </event>
   </interface>
 </protocol>
