@@ -837,8 +837,9 @@
       <entry name="maximized" value="1" summary="the surface is maximized">
 	<description summary="the surface is maximized">
 	  The surface is maximized. The window geometry specified in the configure
-	  event must be obeyed by the client, or the xdg_wm_base.invalid_surface_state
-	  error is raised.
+	  event must be obeyed by the client, or the compositor might not
+	  display the toplevel faithfully (e.g. show a warning, crop or scale
+	  the contents, display an overlay, etc).
 
 	  The client should draw without shadow or other
 	  decoration outside of the window geometry.
