@@ -33,8 +33,10 @@
       The main feature of this interface is accurate presentation
       timing feedback to ensure smooth video playback while maintaining
       audio/video synchronization. Some features use the concept of a
-      presentation clock, which is defined in the
-      presentation.clock_id event.
+      presentation clock, which was defined in the
+      presentation.clock_id event. As of version 2 of this protocol,
+      presentation.clock_id is no longer sent, and the presentation
+      clock is always CLOCK_MONOTONIC.
 
       A content update for a wl_surface is submitted by a
       wl_surface.commit request. Request 'feedback' associates with
@@ -117,6 +119,9 @@
         irrelevant. Precision of one millisecond or better is
         recommended. Clients must be able to query the current clock
         value directly, not by asking the compositor.
+
+        NOTE: As of version 2, this event is no longer sent, and
+        the presentation clock is always CLOCK_MONOTONIC.
       </description>
       <arg name="clk_id" type="uint" summary="platform clock identifier"/>
     </event>
