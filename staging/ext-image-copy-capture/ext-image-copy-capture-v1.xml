@@ -34,7 +34,7 @@
     only be done by creating a new major version of the extension.
   </description>
 
-  <interface name="ext_image_copy_capture_manager_v1" version="1">
+  <interface name="ext_image_copy_capture_manager_v1" version="2">
     <description summary="manager to inform clients and begin capturing">
       This object is a manager which offers requests to start capturing from a
       source.
@@ -83,7 +83,7 @@
     </request>
   </interface>
 
-  <interface name="ext_image_copy_capture_session_v1" version="1">
+  <interface name="ext_image_copy_capture_session_v1" version="2">
     <description summary="image copy capture session">
       This object represents an active image copy capture session.
 
@@ -197,6 +197,25 @@
         this object.
       </description>
     </request>
+
+    <!-- Version 2 additions -->
+
+    <event name="preferred_done" since="2">
+      <description summary="all preferred formats have been sent">
+        The event is sent once when all events for buffer formats that the
+        compositor would prefer were adhered to have been sent, and will be
+        followed by any remaining supported buffer formats.
+
+        A client should aim to adhere to preferred buffer formats when
+        possible, as these may be more efficient for the compositor and should
+        have sufficient color resolution for the captured content according to
+        compositor policy.
+
+        Preferred and remaining buffer formats may overlap. If a compositor
+        does not have any preferred formats, it should omit the preferred_done
+        event when sending buffer constraints.
+      </description>
+    </event>
   </interface>
 
   <interface name="ext_image_copy_capture_frame_v1" version="1">
