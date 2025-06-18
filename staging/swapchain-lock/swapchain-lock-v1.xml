@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="swapchain_lock_v1">
+  <copyright>
+    Copyright © 2025 Julian Orth
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="protocol for cooperative swapchain exclusion">
+    This protocol allows application components to ensure that there is only one
+    swapchain for a wl_surface.
+
+    Components using this protocol should ensure that they never
+
+    - make wl_surface.attach requests,
+    - create a wp_linux_drm_syncobj_surface_v1 extension,
+    - create a wp_commit_timer_v1 extension,
+    - create a wp_fifo_v1 extension,
+    - create a wp_color_management_surface_v1 extension, or
+    - create a wp_color_representation_surface_v1 extension
+
+    for a wl_surface unless they have acquired the lock. Furthermore, they
+    should destroy all such extension objects before releasing the lock.
+  </description>
+
+  <interface name="wp_swapchain_lock_manager_v1" version="1">
+    <description summary="swapchain lock manager">
+      A global interface for acquiring swapchain locks.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager object">
+        This has no effect on existing locks or lock requests.
+      </description>
+    </request>
+
+    <request name="request_lock">
+      <description summary="requests the swapchain lock of a surface">
+        Requests the swapchain lock of a surface.
+      </description>
+      <arg name="id" type="new_id" interface="wp_swapchain_lock_request_v1"
+           summary="the request object"/>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="the surface"/>
+    </request>
+  </interface>
+
+  <interface name="wp_swapchain_lock_request_v1" version="1">
+    <description summary="advisory swapchain lock request">
+      This object represents a request to acquire the advisory swapchain lock
+      of a wl_surface.
+
+      Immediately after this object has been created, the compositor will send
+      either the denied or the granted event.
+    </description>
+
+    <event name="denied" type="destructor">
+      <description summary="the request was denied">
+        The request to acquire the lock was denied because another lock already
+        exists.
+      </description>
+    </event>
+
+    <event name="granted" type="destructor">
+      <description summary="the request was granted">
+        The request to acquire the lock was granted.
+      </description>
+      <arg name="swapchain" type="new_id" interface="wp_swapchain_lock_v1"
+           summary="the acquired lock"/>
+    </event>
+  </interface>
+
+  <interface name="wp_swapchain_lock_v1" version="1">
+    <description summary="advisory swapchain lock">
+      This object represents the advisory swapchain lock of a wl_surface. While
+      this object exists, no other wp_swapchain_lock_v1 can be acquired for the
+      wl_surface.
+    </description>
+
+    <request name="release" type="destructor">
+      <description summary="release the swapchain lock">
+        This request destroys the wp_swapchain_lock_v1 object and releases the
+        lock.
+      </description>
+    </request>
+  </interface>
+</protocol>
