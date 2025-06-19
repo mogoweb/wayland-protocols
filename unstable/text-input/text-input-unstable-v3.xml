@@ -47,7 +47,7 @@
     interface version number is reset.
   </description>
 
-  <interface name="zwp_text_input_v3" version="1">
+  <interface name="zwp_text_input_v3" version="2">
     <description summary="text input">
       The zwp_text_input_v3 interface represents text input and input methods
       associated with a seat. It provides enter/leave events to follow the
@@ -432,6 +432,40 @@
       </description>
       <arg name="serial" type="uint"/>
     </event>
+
+    <!-- Version 2 additions -->
+    <request name="process_keys" since="2">
+      <description summary="">
+	Instruct the compositor to re-process through the input method a series
+	of recent wl_keyboard.key events, starting from the given serial until
+	the zwp_text_input_v3 is enabled. This request should only be honored in
+	the commit that does the zwp_text_input_v3.enable request enabling input
+	method treatment.
+
+	This request is useful for cases where wl_keyboard.key events result in
+	zwp_text_input_v3.enable happening on the client. A typical case is
+	type-to-search UIs where the first characters introduced will trigger
+	both change focus to an input search and re-route the key event being
+	handled to it. In those situations it is desirable to have the already
+	sent key events be processed through the input method instead of
+	being handled without input method involvement.
+
+	Compositors should keep a small buffer of the last key events, if the
+	requested serial is too old or does not exist in the buffer, compositors
+	are free to either ignore the request or reprocess the full buffer.
+	Compositors must replay full key press/release sequences to the input
+	method.
+
+	Clients using this request must ignore the local effects of
+	wl_keyboard.key events after this request is issued, until the first
+	zwp_text_input_v3.done event is received. The compositor may choose to
+	replay the wl_keyboard.key events after sending the done event.
+
+	State set with this request is double-buffered. It will get applied on
+	the next zwp_text_input_v3.commit request.
+      </description>
+      <arg name="serial" type="uint"/>
+    </request>
   </interface>
 
   <interface name="zwp_text_input_manager_v3" version="1">
