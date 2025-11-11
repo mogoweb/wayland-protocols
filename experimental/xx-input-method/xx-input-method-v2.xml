@@ -47,7 +47,7 @@
     mechanism is discouraged.
   </description>
 
-  <interface name="xx_input_method_v1" version="3">
+  <interface name="xx_input_method_v1" version="4">
     <description summary="input method">
       An input method object allows for clients to compose text.
 
@@ -217,6 +217,38 @@
       <arg name="features" type="uint" enum="xx_text_input_v3.supported_features"/>
     </event>
 
+    <enum name="protocol_compat" since="4">
+      <description summary="protocol comatibility value">
+        Tells the input method client what kinds of events the text input client supports.
+      </description>
+      <entry name="text_input_v3" value="0x0" summary="zwp-text-input-v3 semantics"/>
+      <entry name="xx_text_input" value="0x1">
+        <description summary="xx-text-input semantics">
+          Changes the meaning of serial compared to v3.
+          The text input client now applies requested updates on a "best-effort" basis.
+        </description>
+      </entry>
+      <!-- This doesn't need disambiguating. Both protocols are pdated in lockstep, and the compositor should implement both protocols to the current version. By the experimental protocols contract, every version bump is breaking compatibility. -->
+    </enum>
+    
+    <event name="announce_protocol_compat" since="3">
+      <description summary="set text input's compatibility level">
+        Tells the input method client what kinds of events the text input client supports.
+
+        <!-- While text input protocols and input method protocols are updated in lockstep, nobody knows what versions of either will end up on a user's computer. Old input method with new apps? New input method with old apps?
+        To limit the scope for now, let's assume the user always keeps the input method up to date, and uses old apps. -->
+        
+        Values set with this event are double-buffered. They will get applied
+        on the next .done event.
+        They get reset to initial on the next committed deactivate event.
+        
+        The compositor may send this event as part of a .done chain that switches the active state from inactive to active. It must not send this event otherwise.
+
+        The initial value for version is text_input_v3.
+      </description>
+      <arg name="compat_level" type="uint" enum="protocol_compat"/>
+    </event>
+    
     <event name="done">
       <description summary="apply state">
         Atomically applies state changes recently sent to the client.
@@ -294,7 +326,7 @@
 
         Values set with this request are double-buffered. They must be applied on
         the next xx_input_method_v1.commit request.
-        They must be reset to initial on the next committed disable event.
+        They must be reset to initial on the next committed .deactivate event.
 
         The initial value of text is an empty string. The initial value of
         cursor_begin, and cursor_end are both 0.
@@ -311,6 +343,11 @@
         before_length and after_length are the number of bytes before and after
         the current cursor index (excluding the preedit text) to delete.
 
+        If text is selected, it must be deleted.
+        
+        If indices exceed the available text boundaries, they should be adjusted to fit in boundaries and deletion reattempted.
+        If indices do not lie on byte boundaries, then the text input client should delete at least that many bytes. In this case, the client decides the end point, but a character boundary same as when deleting using the keyboard is recommended.
+        
         If any preedit text is present, it is replaced with the cursor for the
         purpose of this event. In effect before_length is counted from the
         beginning of preedit text, and after_length from its end (see commit
@@ -376,6 +413,12 @@
 
         Note that the input method can not receive more than 4000 bytes of selection text, which might be the case for example when the entire document is selected. Nevertheless, the text input must delete the entire selected range before inserting the commit string.
         
+        Serial handling with protocol_compat == xx_text_input
+        
+        The serial number should be set to 0.
+        
+        Serial handling with protocol_compat == text_input_v3
+
         The serial number reflects the last state of the xx_input_method_v1
         object known to the client. The value of the serial argument must be
         equal to the number of done events already issued by that object. When
@@ -465,7 +508,7 @@
 
       A typical sequence resulting from the user selecting a new text field and typing some text:
       
-      1. compositor (Co): input_method.enable()
+      1. compositor (Co): input_method.activate()
       2. Co: input_method.done()
       3. [init sequence]
       4. Co: input_method.set_surrounding_text("new text")
@@ -474,7 +517,7 @@
       7. client (Cl): ack_configure()
       8. Cl: wl_surface.commit()
       
-      When the corresponding input_method receives a commited .disable event, the popup gets destroyed and becomes invalid and its surface gets unmapped.
+      When the corresponding input_method receives a commited .deactivate event, the popup gets destroyed and becomes invalid and its surface gets unmapped.
 
       The client must not destroy the underlying wl_surface while the
       xx_input_popup_surface_v2 object exists.
@@ -867,7 +910,7 @@
     </request>
   </interface>
 
-  <interface name="xx_input_method_manager_v2" version="3">
+  <interface name="xx_input_method_manager_v2" version="4">
     <description summary="input method manager">
       The input method manager allows the client to become the input method on
       a chosen seat.

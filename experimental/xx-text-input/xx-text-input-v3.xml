@@ -6,6 +6,7 @@
     Copyright © 2015, 2016 Jan Arne Petersen
     Copyright © 2017, 2018 Red Hat, Inc.
     Copyright © 2018       Purism SPC
+    Copyright © 2025       DorotaC
 
     Permission to use, copy, modify, distribute, and sell this
     software and its documentation for any purpose is hereby granted
@@ -47,7 +48,7 @@
     interface version number is reset.
   </description>
 
-  <interface name="xx_text_input_v3" version="2">
+  <interface name="xx_text_input_v3" version="3">
     <description summary="text input">
       The xx_text_input_v3 interface represents text input and input methods
       associated with a seat. It provides enter/leave events to follow the
@@ -391,6 +392,9 @@
         
         If text is selected, it must be deleted.
 
+        If indices exceed the available text boundaries, they should be adjusted to fit in boundaries and deletion reattempted.
+        If indices do not lie on byte boundaries, then the text input client should delete at least that many bytes. In this case, the client decides the end point, but a character boundary same as when deleting using the keyboard is recommended.
+
         If a preedit text is present, in effect before_length is counted from
         the beginning of it, and after_length from its end (see done event
         sequence).
@@ -462,6 +466,12 @@
         7. Place cursor inside preedit text.
         8. Perform the requested action.
 
+        Serial handling starting version 2:
+        
+        The argument "serial" is ignored.
+
+        Serial handling version 1:
+        
         The serial number reflects the last state of the xx_text_input_v3
         object known to the compositor. The value of the serial argument must
         be equal to the number of commit requests already issued on that object.
@@ -555,7 +565,7 @@
     </request>
   </interface>
 
-  <interface name="xx_text_input_manager_v3" version="2">
+  <interface name="xx_text_input_manager_v3" version="3">
     <description summary="text input manager">
       A factory for text-input objects. This object is a global singleton.
     </description>
