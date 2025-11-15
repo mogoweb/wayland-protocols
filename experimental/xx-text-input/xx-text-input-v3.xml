@@ -388,6 +388,8 @@
 
         Before_length and after_length are the number of bytes before and after
         the current cursor index (excluding the selection) to delete.
+        
+        If text is selected, it must be deleted.
 
         If a preedit text is present, in effect before_length is counted from
         the beginning of it, and after_length from its end (see done event
